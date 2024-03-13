@@ -29,7 +29,6 @@
 #include "hardware_interface/types/hardware_interface_return_values.hpp"
 #include "mavros_msgs/msg/override_rc_in.hpp"
 #include "rcl_interfaces/msg/parameter.hpp"
-#include "rcl_interfaces/msg/parameter_value.hpp"
 #include "rcl_interfaces/srv/set_parameters.hpp"
 #include "rclcpp/macros.hpp"
 #include "rclcpp/node.hpp"
@@ -73,16 +72,23 @@ class ThrusterHardware : public hardware_interface::SystemInterface
   hardware_interface::return_type write(const rclcpp::Time & time, const rclcpp::Duration & period) override;
 
 protected:
-  // We need access to a node to interact with MAVROS
+  struct ThrusterConfig
+  {
+    rcl_interfaces::msg::Parameter param;
+    int channel;
+  };
+
+  // We need a node to interact with MAVROS
   std::shared_ptr<rclcpp::Node> node_;
 
   std::shared_ptr<rclcpp::Publisher<mavros_msgs::msg::OverrideRCIn>> override_rc_pub_;
   std::unique_ptr<realtime_tools::RealtimePublisher<mavros_msgs::msg::OverrideRCIn>> rt_override_rc_pub_;
 
   std::shared_ptr<rclcpp::Client<rcl_interfaces::srv::SetParameters>> set_params_client_;
-  std::vector<rcl_interfaces::msg::Parameter> parameters_;
+  std::vector<ThrusterConfig> thruster_configs_;
 
-  std::vector<int> hw_states_pwm_;
+  int max_retries_;
+  std::vector<double> hw_commands_pwm_;
 };
 
 }  // namespace thruster_hardware
