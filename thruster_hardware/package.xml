@@ -1,20 +1,26 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-
-  <name>example_pkg</name>
+  <name>thruster_hardware</name>
   <version>0.0.1</version>
-  <description>A sample ROS 2 package</description>
+  <description>A ros2_control hardware interface for direct thruster control via ArduSub.</description>
 
   <maintainer email="evanp922@gmail.com">Evan Palmer</maintainer>
-  <license>BSD 3-Clause</license>
+  <license>MIT</license>
 
-  <url type="repository">https://github.com/Robotic-Decision-Making-Lab/ardusub_driver.git</url>
-  <url type="bugtracker">https://github.com/Robotic-Decision-Making-Lab/ardusub_driver/issues</url>
+  <url type="repository">https://github.com/Robotic-Decision-Making-Lab/auv_controllers.git</url>
+  <url type="bugtracker">https://github.com/Robotic-Decision-Making-Lab/auv_controllers/issues</url>
 
   <author>Evan Palmer</author>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <depend>rclcpp</depend>
+  <depend>ros2_control</depend>
+  <depend>ros2_controllers</depend>
+  <depend>hardware_interface</depend>
+  <depend>pluginlib</depend>
+  <depend>mavros_msgs</depend>
 
   <test_depend>ament_lint_auto</test_depend>
 

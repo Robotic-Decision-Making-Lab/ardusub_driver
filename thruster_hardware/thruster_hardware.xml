@@ -1,0 +1,11 @@
+<library path="thruster_hardware">
+
+  <class name="thruster_hardware/ThrusterHardware"
+    type="thruster_hardware::ThrusterHardware"
+    base_class_type="hardware_interface::SystemInterface">
+    <description>
+      ArduSub thruster hardware plugin for ros2_control using a system hardware interface-type.
+    </description>
+  </class>
+
+</library>
