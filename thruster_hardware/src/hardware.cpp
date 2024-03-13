@@ -179,6 +179,8 @@ hardware_interface::CallbackReturn ThrusterHardware::on_activate(const rclcpp_li
       RCLCPP_INFO(  // NOLINT
         rclcpp::get_logger("ThrusterHardware"), "Successfully set thruster parameters to RC passthrough!");
 
+      // TODO(anyone): Stop the thrusters before switching handing over control
+
       return hardware_interface::CallbackReturn::SUCCESS;
     }
   }
@@ -195,6 +197,8 @@ hardware_interface::CallbackReturn ThrusterHardware::on_activate(const rclcpp_li
 hardware_interface::CallbackReturn ThrusterHardware::on_deactivate(const rclcpp_lifecycle::State & /*previous_state*/)
 {
   RCLCPP_INFO(rclcpp::get_logger("ThrusterHardware"), "Activating the ThrusterHardware system interface.");  // NOLINT
+
+  // TODO(anyone): Stop the thrusters before switching out of passthrough mode
 
   std::vector<rcl_interfaces::msg::Parameter> params;
   params.reserve(thruster_configs_.size());
