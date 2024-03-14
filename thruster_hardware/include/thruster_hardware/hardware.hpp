@@ -76,7 +76,10 @@ protected:
   {
     rcl_interfaces::msg::Parameter param;
     int channel;
+    int neutral_pwm = 1500;
   };
+
+  void stop_thrusters();
 
   // We need a node to interact with MAVROS
   std::shared_ptr<rclcpp::Node> node_;
