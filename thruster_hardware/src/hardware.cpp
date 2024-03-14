@@ -185,6 +185,40 @@ hardware_interface::CallbackReturn ThrusterHardware::on_activate(const rclcpp_li
     }
   }
 
+  // hardware_interface::CallbackReturn ThrusterHardware::on_activate(const rclcpp_lifecycle::State &
+  // /*previous_state*/)
+  // {
+  //   RCLCPP_INFO(  // NOLINT
+  //     rclcpp::get_logger("ThrusterHardware"), "Activating the ThrusterHardware system interface.");
+
+  //   RCLCPP_WARN(  // NOLINT
+  //     rclcpp::get_logger("ThrusterHardware"), "Attempting to set thruster parameters to RC passthrough...");
+
+  //   for (const auto & config : thruster_configs_) {
+  //     auto request = std::make_shared<mavros_msgs::srv::ParamSetV2::Request>();
+
+  //     request->param_id = config.param.name;
+  //     request->value.type = rcl_interfaces::msg::ParameterType::PARAMETER_INTEGER;
+  //     request->value.integer_value = 1;  // Set the thruster parameter values to RC passthrough
+  //     request->force_set = true;
+
+  //     for (int i = 0; i < max_retries_; ++i) {
+  //       auto result = set_params_client_->async_send_request(request);
+
+  //       if (rclcpp::spin_until_future_complete(node_, result) == rclcpp::FutureReturnCode::SUCCESS) {
+  //         if (result.get()->success) {
+  //           RCLCPP_INFO(rclcpp::get_logger("ThrusterHardware"), "Successfully set thruster parameter.");
+  //           break;
+  //         } else {
+  //           RCLCPP_ERROR(rclcpp::get_logger("ThrusterHardware"), "Failed to set thruster parameter.");
+  //         }
+  //       }
+  //     }
+  //   }
+
+  //   return hardware_interface::CallbackReturn::SUCCESS;
+  // }
+
   RCLCPP_ERROR(  // NOLINT
     rclcpp::get_logger("ThrusterHardware"),
     "Failed to set thruster parameters to passthrough mode after %d attempts. Make sure that the MAVROS parameter "
