@@ -6,9 +6,7 @@
     "*.srdf": "xml",
     "*.rviz": "yaml",
     "*.config": "xml",
-    "*.sdf": "xml",
-    "vector": "cpp",
-    "*.tcc": "cpp"
+    "*.sdf": "xml"
   },
   "terminal.integrated.defaultProfile.linux": "bash",
   "terminal.integrated.profiles.linux": {
@@ -22,18 +20,6 @@
   "files.trimTrailingWhitespace": true,
   "editor.formatOnSave": true,
   "editor.tabSize": 2,
-  "autoDocstring.startOnNewLine": false,
-  "autoDocstring.docstringFormat": "google-notypes",
-  "python.autoComplete.extraPaths": [
-    "/opt/ros/iron/lib/python3.10/site-packages/",
-    "/opt/ros/iron/local/lib/python3.10/dist-packages/",
-    "${workspaceFolder}/install/"
-  ],
-  "python.analysis.extraPaths": [
-    "/opt/ros/iron/lib/python3.10/site-packages/",
-    "/opt/ros/iron/local/lib/python3.10/dist-packages/",
-    "${workspaceFolder}/install/"
-  ],
   "C_Cpp.default.intelliSenseMode": "linux-gcc-x86",
   "C_Cpp.clang_format_fallbackStyle": "Google",
   "C_Cpp.codeAnalysis.clangTidy.enabled": true,
@@ -43,16 +29,6 @@
     "editor.rulers": [120],
     "editor.tabSize": 2,
     "editor.defaultFormatter": "xaver.clang-format"
-  },
-  "[python]": {
-    "editor.tabSize": 4,
-    "editor.rulers": [90],
-    "editor.formatOnSave": true,
-    "editor.codeActionsOnSave": {
-      "source.fixAll": "explicit",
-      "source.organizeImports": "explicit"
-    },
-    "editor.defaultFormatter": "ms-python.black-formatter"
   },
   "[dockerfile]": {
     "editor.quickSuggestions": {

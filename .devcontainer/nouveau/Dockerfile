@@ -17,11 +17,6 @@ RUN sudo apt-get -q update \
     && sudo apt-get clean -y \
     && sudo rm -rf /var/lib/apt/lists/*
 
-# Install debugging/linting Python packages
-COPY --chown=$USER_UID:$USER_GID requirements-dev.txt .
-RUN python3 -m pip install -r requirements-dev.txt \
-    && rm -rf requirements-dev.txt
-
 # Disable the setuputils installation warning
 # This prevents us from needing to pin the setuputils version (which doesn't always work)
 ENV PYTHONWARNINGS="ignore"
