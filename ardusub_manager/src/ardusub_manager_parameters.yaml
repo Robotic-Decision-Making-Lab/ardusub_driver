@@ -7,7 +7,7 @@ ardusub_manager:
       read_only: true
     },
     rates: {
-      type: int_array,
+      type: double_array,
       default_value: [],
       description: "The rates that each message should be published at. This should be provided in the same order as the message IDs.",
       read_only: true
