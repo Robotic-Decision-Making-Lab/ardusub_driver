@@ -32,6 +32,11 @@ target_link_libraries(ardusub_manager PUBLIC ardusub_manager_parameters)
 
 ament_target_dependencies(ardusub_manager PUBLIC ${THIS_PACKAGE_INCLUDE_DEPENDS})
 
-install(TARGETS ardusub_manager ardusub_manager_parameters)
+install(
+  TARGETS
+    ardusub_manager
+    ardusub_manager_parameters
+  DESTINATION lib/ardusub_manager
+)
 
 ament_package()
