@@ -1,9 +1,10 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>thruster_hardware</name>
+
+  <name>ardusub_manager</name>
   <version>0.0.1</version>
-  <description>A ros2_control hardware interface for direct thruster control via ArduSub.</description>
+  <description>High-level package providing access to commonly used ArduSub features</description>
 
   <maintainer email="evanp922@gmail.com">Evan Palmer</maintainer>
   <license>MIT</license>
@@ -16,17 +17,14 @@
   <buildtool_depend>ament_cmake</buildtool_depend>
 
   <depend>rclcpp</depend>
-  <depend>ros2_control</depend>
-  <depend>ros2_controllers</depend>
-  <depend>hardware_interface</depend>
-  <depend>pluginlib</depend>
+  <depend>rclcpp_lifecycle</depend>
+  <depend>generate_parameter_library</depend>
   <depend>mavros_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>geographic_msgs</depend>
 
   <test_depend>ament_lint_auto</test_depend>
-
-  <test_depend>ament_cmake_copyright</test_depend>
-  <test_depend>ament_cmake_lint_cmake</test_depend>
-  <test_depend>ament_cmake_xmllint</test_depend>
+  <test_depend>ament_lint_common</test_depend>
 
   <export>
     <build_type>ament_cmake</build_type>
