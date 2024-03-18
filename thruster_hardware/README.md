@@ -7,7 +7,7 @@ using MAVROS.
 
 > [!IMPORTANT]
 > Controllers that use the thruster hardware interface should be launched
-> *after* MAVROS has fully loaded the `param` plugin.
+> *after* MAVROS has fully loaded the "param", "command", and "rc_io" plugins.
 
 > [!CAUTION]
 > Please exercise caution when using PWM passthrough. This mode disables all
@@ -26,9 +26,10 @@ thruster_hardware/ThrusterHardware
 ## Parameters
 
 * param_name: The name of ArduSub servo function parameter associated to with
-  a specific thruster (e.g., `SERVO1_FUNCTION`).
+  a specific thruster (e.g., `SERVO1_FUNCTION`). [string]
 * default_param_value: The default value of the servo function parameter. The
   thruster hardware will attempt to restore these parameters on deactivation.
-* channel: The thruster channel number.
+  [integer]
+* channel: The thruster channel number. [integer]
 * neutral_pwm (optional): The neutral PWM value for the thruster. This
-  defaults to 1500.
+  defaults to 1500. [integer]
