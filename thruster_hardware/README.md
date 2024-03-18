@@ -30,5 +30,5 @@ thruster_hardware/ThrusterHardware
 * default_param_value: The default value of the servo function parameter. The
   thruster hardware will attempt to restore these parameters on deactivation.
 * channel: The thruster channel number.
-* neutral_pwm (optional): The neutral PWM value for this thruster. This
+* neutral_pwm (optional): The neutral PWM value for the thruster. This
   defaults to 1500.
