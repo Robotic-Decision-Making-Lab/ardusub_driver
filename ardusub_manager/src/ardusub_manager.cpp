@@ -32,7 +32,7 @@ ArduSubManager::ArduSubManager()
 
 CallbackReturn ArduSubManager::on_configure(const rclcpp_lifecycle::State & /*previous_state*/)
 {
-  RCLCPP_INFO(this->get_logger(), "Configuring ArduSub manager");
+  RCLCPP_INFO(this->get_logger(), "Configuring ArduSub manager");  // NOLINT
 
   try {
     param_listener_ = std::make_shared<ardusub_manager::ParamListener>(this->get_node_parameters_interface());
@@ -90,7 +90,7 @@ CallbackReturn ArduSubManager::on_configure(const rclcpp_lifecycle::State & /*pr
 CallbackReturn ArduSubManager::on_activate(const rclcpp_lifecycle::State & /*previous_state*/)
 {
   if (set_ekf_origin_) {
-    RCLCPP_INFO(this->get_logger(), "Setting the EKF origin");
+    RCLCPP_INFO(this->get_logger(), "Setting the EKF origin");  // NOLINT
 
     geographic_msgs::msg::GeoPointStamped ekf_origin;
     ekf_origin.header.stamp = this->get_clock()->now();
@@ -130,7 +130,7 @@ CallbackReturn ArduSubManager::on_activate(const rclcpp_lifecycle::State & /*pre
         return CallbackReturn::ERROR;
       }
 
-      RCLCPP_INFO(this->get_logger(), "Home position set successfully!");
+      RCLCPP_INFO(this->get_logger(), "Home position set successfully!");  // NOLINT
     }
   }
 
@@ -145,15 +145,14 @@ CallbackReturn ArduSubManager::on_activate(const rclcpp_lifecycle::State & /*pre
       rclcpp::spin_until_future_complete(this->get_node_base_interface(), future) ==
       rclcpp::FutureReturnCode::SUCCESS) {
       if (!future.get()->success) {
-        RCLCPP_ERROR(
-          this->get_logger(), "Failed to set the message interval for message ID %ld",  // NOLINT
+        RCLCPP_ERROR(  // NOLINT
+          this->get_logger(), "Failed to set the message interval for message ID %ld",
           params_.message_intervals.ids[i]);
         return CallbackReturn::ERROR;
       }
 
-      RCLCPP_INFO(
-        this->get_logger(), "Message interval set successfully for message ID %ld",  // NOLINT
-        params_.message_intervals.ids[i]);
+      RCLCPP_INFO(  // NOLINT
+        this->get_logger(), "Message interval set successfully for message ID %ld", params_.message_intervals.ids[i]);
     }
   }
 
