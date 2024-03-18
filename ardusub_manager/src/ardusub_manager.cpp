@@ -66,7 +66,7 @@ CallbackReturn ArduSubManager::on_configure(const rclcpp_lifecycle::State & /*pr
 
     pose_sub_ = this->create_subscription<geometry_msgs::msg::PoseStamped>(
       "/mavros/local_position/pose", rclcpp::SensorDataQoS(),
-      [this](const geometry_msgs::msg::PoseStamped::SharedPtr msg) {
+      [this](const geometry_msgs::msg::PoseStamped::SharedPtr msg) {  // NOLINT
         geometry_msgs::msg::TransformStamped transform;
 
         transform.header.stamp = msg->header.stamp;
