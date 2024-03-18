@@ -1,0 +1,79 @@
+ardusub_manager:
+  message_intervals: {
+    ids: {
+      type: int_array,
+      default_value: [],
+      description: "The list of MAVLINK messages to request.",
+      read_only: true
+    },
+    rates: {
+      type: double_array,
+      default_value: [],
+      description: "The rates that each message should be published at. This should be provided in the same order as the message IDs.",
+      read_only: true
+    }
+  }
+  set_ekf_origin: {
+    type: bool,
+    default_value: false,
+    description: "Whether or not to set the EKF origin on startup.",
+    read_only: true
+  }
+  ekf_origin: {
+    latitude: {
+      type: double,
+      default_value: 44.65870,
+      description: "The latitude of the EKF origin.",
+      read_only: true
+    },
+    longitude: {
+      type: double,
+      default_value: -124.06556,
+      description: "The longitude of the EKF origin.",
+      read_only: true
+    },
+    altitude: {
+      type: double,
+      default_value: 0.0,
+      description: "The altitude of the EKF origin.",
+      read_only: true
+    }
+  }
+  set_home_position: {
+    type: bool,
+    default_value: false,
+    description: "Whether or not to set the home position on startup.",
+    read_only: true
+  }
+  home_position: {
+    latitude: {
+      type: double,
+      default_value: 44.65870,
+      description: "The latitude of the home position.",
+      read_only: true
+    },
+    longitude: {
+      type: double,
+      default_value: -124.06556,
+      description: "The longitude of the home position.",
+      read_only: true
+    },
+    altitude: {
+      type: double,
+      default_value: 0.0,
+      description: "The altitude of the home position.",
+      read_only: true
+    },
+    yaw: {
+      type: double,
+      default_value: 270.0,
+      description: "The yaw of the home position.",
+      read_only: true
+    }
+  }
+  publish_tf: {
+    type: bool,
+    default_value: true,
+    description: "Whether or not to publish the TF frames for the vehicle. This feature 'technically' exists in MAVROS, but doesn't work properly.",
+    read_only: true
+  }

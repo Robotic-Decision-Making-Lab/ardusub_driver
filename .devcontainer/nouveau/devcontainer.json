@@ -24,17 +24,13 @@
     "vscode": {
       "extensions": [
         "ms-azuretools.vscode-docker",
-        "ms-python.python",
-        "njpwerner.autodocstring",
         "ms-vscode.cpptools",
         "redhat.vscode-xml",
         "redhat.vscode-yaml",
         "smilerobotics.urdf",
         "DavidAnson.vscode-markdownlint",
         "esbenp.prettier-vscode",
-        "xaver.clang-format",
-        "charliermarsh.ruff",
-        "ms-python.black-formatter"
+        "xaver.clang-format"
       ]
     }
   }

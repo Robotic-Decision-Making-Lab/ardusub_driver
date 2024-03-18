@@ -5,7 +5,7 @@
       "includePath": [
         "${workspaceFolder}/**",
         "/opt/ros/iron/include/**",
-        "/usr/include/gz/**"
+        "/home/ros/ws_ros/**"
       ],
       "defines": [],
       "compilerPath": "/usr/bin/gcc",
