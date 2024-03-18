@@ -6,7 +6,8 @@ the ArduSub `SERVON_FUNCTION` parameters for each thruster to PWM passthrough
 using MAVROS.
 
 > [!IMPORTANT]
-> Controllers that use the thruster hardware interface should be launched *after* MAVROS has fully loaded.
+> Controllers that use the thruster hardware interface should be launched
+> *after* MAVROS has fully loaded the `param` plugin.
 
 > [!CAUTION]
 > Please exercise caution when using PWM passthrough. This mode disables all
@@ -20,7 +21,7 @@ thruster_hardware/ThrusterHardware
 
 ## Command Interfaces
 
-* PWM values that should be applied to the thrusters
+* <joint_name>/pwm
 
 ## Parameters
 
