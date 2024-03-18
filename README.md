@@ -18,7 +18,7 @@ The main features of the ArduSub driver include
 ## Installation
 
 ardusub_driver is currently supported on Linux and is available for the ROS 2
-Iron distribution. Prior to installing the ardusub_driver, first install MAVROS
+Iron distribution. Prior to installing this project, first install [MAVROS](https://github.com/mavlink/mavros).
 Once MAVROS has been successfully installed, clone this project to the
 `src` directory of your ROS workspace:
 
