@@ -8,8 +8,8 @@ ROS 2 into marine vehicles that use ArduSub (e.g., the [BlueROV](https://bluerob
 The main features of the ArduSub driver include
 
 * thruster_hardware: A ros2_control hardware interface that enables individual
-  thruster-level control. This can be used alongside projects like
-  [auv_controllers](https://github.com/Robotic-Decision-Making-Lab/auv_controllers)
+  thruster-level control in simulation or on hardware. This can be used
+  alongside projects like [auv_controllers](https://github.com/Robotic-Decision-Making-Lab/auv_controllers)
   to control marine robots.
 * ardusub_manager: A high-level node that simplifies ROS 2 integration with
   marine vehicles by providing interfaces for tasks like setting the interval
