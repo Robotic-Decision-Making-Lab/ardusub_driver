@@ -32,7 +32,7 @@ ArduSubManager::ArduSubManager()
 
 CallbackReturn ArduSubManager::on_configure(const rclcpp_lifecycle::State & /*previous_state*/)
 {
-  RCLCPP_INFO(this->get_logger(), "Configuring ArduSub manager");  // NOLINT
+  RCLCPP_INFO(this->get_logger(), "Configuring the ArduSub manager...");  // NOLINT
 
   try {
     param_listener_ = std::make_shared<ardusub_manager::ParamListener>(this->get_node_parameters_interface());
@@ -84,11 +84,15 @@ CallbackReturn ArduSubManager::on_configure(const rclcpp_lifecycle::State & /*pr
 
   set_home_pos_client_ = this->create_client<mavros_msgs::srv::CommandHome>("/mavros/cmd/set_home");
 
+  RCLCPP_INFO(this->get_logger(), "Successfully configured the ArduSub manager!");  // NOLINT
+
   return CallbackReturn::SUCCESS;
 }
 
 CallbackReturn ArduSubManager::on_activate(const rclcpp_lifecycle::State & /*previous_state*/)
 {
+  RCLCPP_INFO(this->get_logger(), "Activating the ArduSub manager...");  // NOLINT
+
   if (set_ekf_origin_) {
     RCLCPP_INFO(this->get_logger(), "Setting the EKF origin");  // NOLINT
 
@@ -106,6 +110,7 @@ CallbackReturn ArduSubManager::on_activate(const rclcpp_lifecycle::State & /*pre
       if (!rclcpp::ok()) {
         RCLCPP_ERROR(  // NOLINT
           this->get_logger(), "Interrupted while waiting for the `/mavros/cmd/set_home` service.");
+        RCLCPP_INFO(this->get_logger(), "Failed to activate the ArduSub manager");  // NOLINT
         return CallbackReturn::ERROR;
       }
       RCLCPP_INFO(this->get_logger(), "Waiting for the `/mavros/cmd/set_home` service to be available...");  // NOLINT
@@ -126,7 +131,8 @@ CallbackReturn ArduSubManager::on_activate(const rclcpp_lifecycle::State & /*pre
       rclcpp::spin_until_future_complete(this->get_node_base_interface(), future) ==
       rclcpp::FutureReturnCode::SUCCESS) {
       if (!future.get()->success) {
-        RCLCPP_ERROR(this->get_logger(), "Failed to set the home position.");  // NOLINT;
+        RCLCPP_ERROR(this->get_logger(), "Failed to set the home position");        // NOLINT
+        RCLCPP_INFO(this->get_logger(), "Failed to activate the ArduSub manager");  // NOLINT
         return CallbackReturn::ERROR;
       }
 
@@ -148,6 +154,7 @@ CallbackReturn ArduSubManager::on_activate(const rclcpp_lifecycle::State & /*pre
         RCLCPP_ERROR(  // NOLINT
           this->get_logger(), "Failed to set the message interval for message ID %ld",
           params_.message_intervals.ids[i]);
+        RCLCPP_INFO(this->get_logger(), "Failed to activate the ArduSub manager");  // NOLINT
         return CallbackReturn::ERROR;
       }
 
@@ -155,6 +162,8 @@ CallbackReturn ArduSubManager::on_activate(const rclcpp_lifecycle::State & /*pre
         this->get_logger(), "Message interval set successfully for message ID %ld", params_.message_intervals.ids[i]);
     }
   }
+
+  RCLCPP_INFO(this->get_logger(), "Successfully activated the ArduSub manager!");  // NOLINT
 
   return CallbackReturn::SUCCESS;
 }
