@@ -179,12 +179,12 @@ CallbackReturn ArduSubManager::on_activate(const rclcpp_lifecycle::State & /*pre
     request->message_rate = params_.message_intervals.rates[i];
 
     auto future_result = set_message_intervals_client_->async_send_request(request).future.share();
-    auto future_status = wait_for_result(future_result, std::chrono::seconds(3));
+    auto future_status = wait_for_result(future_result, std::chrono::seconds(5));
 
     // Check if a timeout occurred
     if (future_status != std::future_status::ready) {
       RCLCPP_ERROR(  // NOLINT
-        this->get_logger(), "A timeout occurred to set the message interval for message ID %ld",
+        this->get_logger(), "A timeout occurred while attempting to set the message interval for message ID %ld",
         params_.message_intervals.ids[i]);
       RCLCPP_INFO(this->get_logger(), "Failed to activate the ArduSub manager");  // NOLINT
       return CallbackReturn::ERROR;
