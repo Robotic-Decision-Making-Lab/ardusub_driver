@@ -247,7 +247,7 @@ int main(int argc, char * argv[])
 {
   rclcpp::init(argc, argv);
 
-  rclcpp::executors::MultiThreadedExecutor executor;
+  rclcpp::executors::MultiThreadedExecutor executor(rclcpp::ExecutorOptions(), 2);
 
   auto node = std::make_shared<ardusub_manager::ArduSubManager>();
   executor.add_node(node->get_node_base_interface());
