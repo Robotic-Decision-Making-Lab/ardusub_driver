@@ -20,6 +20,8 @@
 
 #include "ardusub_manager.hpp"
 
+#include <chrono>
+
 #include "geometry_msgs/msg/transform_stamped.hpp"
 
 namespace ardusub_manager
@@ -80,14 +82,16 @@ CallbackReturn ArduSubManager::on_configure(const rclcpp_lifecycle::State & /*pr
   set_ekf_origin_ = params_.set_ekf_origin;
   set_home_pos_ = params_.set_home_position;
 
+  callback_group_ = create_callback_group(rclcpp::CallbackGroupType::Reentrant);
+
   if (!params_.message_intervals.ids.empty()) {
     if (params_.message_intervals.rates.size() != params_.message_intervals.ids.size()) {
       fprintf(stderr, "The number of message IDs does not match the number of message rates\n");
       return CallbackReturn::ERROR;
     }
 
-    set_message_intervals_client_ =
-      this->create_client<mavros_msgs::srv::MessageInterval>("/mavros/set_message_interval");
+    set_message_intervals_client_ = this->create_client<mavros_msgs::srv::MessageInterval>(
+      "/mavros/set_message_interval", rclcpp::SystemDefaultsQoS(), callback_group_);
   }
 
   ekf_origin_pub_ = this->create_publisher<geographic_msgs::msg::GeoPointStamped>(
