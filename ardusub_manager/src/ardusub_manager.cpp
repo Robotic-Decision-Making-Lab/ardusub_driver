@@ -25,6 +25,39 @@
 namespace ardusub_manager
 {
 
+namespace
+{
+
+/**
+ * @brief Wait for a future to be ready or for a timeout to occur
+ *
+ * @note This has been retrieved from the following source:
+ * https://github.com/ros2/demos/blob/619c4bc2c9b49fa2073ed19597fc42e882324b2f/lifecycle/src/lifecycle_service_client.cpp#L46
+ */
+template <typename T>
+std::future_status wait_for_result(T & future, std::chrono::seconds timeout)
+{
+  auto end_t = std::chrono::steady_clock::now() + timeout;
+  std::chrono::milliseconds wait_time(100);
+  std::future_status status = std::future_status::timeout;
+
+  do {
+    auto now = std::chrono::steady_clock::now();
+    auto time_left = end - now;
+
+    if (time_left <= std::chrono::seconds(0)) {
+      break;
+    }
+
+    status = future.wait_for((time_left < wait_period) ? time_left : wait_period);
+
+  } while (rclcpp::ok() && status != std::future_status::ready);
+
+  return status;
+}
+
+}  // namespace
+
 ArduSubManager::ArduSubManager()
 : rclcpp_lifecycle::LifecycleNode("ardusub_manager")
 {
@@ -145,22 +178,45 @@ CallbackReturn ArduSubManager::on_activate(const rclcpp_lifecycle::State & /*pre
     request->message_id = params_.message_intervals.ids[i];
     request->message_rate = params_.message_intervals.rates[i];
 
-    auto future = set_message_intervals_client_->async_send_request(request);
+    // auto future = set_message_intervals_client_->async_send_request(request);
 
-    if (
-      rclcpp::spin_until_future_complete(this->get_node_base_interface(), future) ==
-      rclcpp::FutureReturnCode::SUCCESS) {
-      if (!future.get()->success) {
-        RCLCPP_ERROR(  // NOLINT
-          this->get_logger(), "Failed to set the message interval for message ID %ld",
-          params_.message_intervals.ids[i]);
-        RCLCPP_INFO(this->get_logger(), "Failed to activate the ArduSub manager");  // NOLINT
-        return CallbackReturn::ERROR;
-      }
+    // if (
+    //   rclcpp::spin_until_future_complete(this->get_node_base_interface(), future) ==
+    //   rclcpp::FutureReturnCode::SUCCESS) {
+    //   if (!future.get()->success) {
+    //     RCLCPP_ERROR(  // NOLINT
+    //       this->get_logger(), "Failed to set the message interval for message ID %ld",
+    //       params_.message_intervals.ids[i]);
+    //     RCLCPP_INFO(this->get_logger(), "Failed to activate the ArduSub manager");  // NOLINT
+    //     return CallbackReturn::ERROR;
+    //   }
 
-      RCLCPP_INFO(  // NOLINT
-        this->get_logger(), "Message interval set successfully for message ID %ld", params_.message_intervals.ids[i]);
+    //   RCLCPP_INFO(  // NOLINT
+    //     this->get_logger(), "Message interval set successfully for message ID %ld",
+    //     params_.message_intervals.ids[i]);
+    // }
+
+    auto future_result = set_message_intervals_client_->async_send_request(request).future.share();
+    auto future_status = wait_for_result(future_result, std::chrono::seconds(3));
+
+    // Check if a timeout occurred
+    if (future_status != std::future_status::ready) {
+      RCLCPP_ERROR(  // NOLINT
+        this->get_logger(), "Failed to set the message interval for message ID %ld", params_.message_intervals.ids[i]);
+      RCLCPP_INFO(this->get_logger(), "Failed to activate the ArduSub manager");  // NOLINT
+      return CallbackReturn::ERROR;
     }
+
+    // Check if the request was successful
+    if (!future_result.get()->success) {
+      RCLCPP_ERROR(  // NOLINT
+        this->get_logger(), "Failed to set the message interval for message ID %ld", params_.message_intervals.ids[i]);
+      RCLCPP_INFO(this->get_logger(), "Failed to activate the ArduSub manager");  // NOLINT
+      return CallbackReturn::ERROR;
+    }
+
+    RCLCPP_INFO(  // NOLINT
+      this->get_logger(), "Message interval set successfully for message ID %ld", params_.message_intervals.ids[i]);
   }
 
   RCLCPP_INFO(this->get_logger(), "Successfully activated the ArduSub manager!");  // NOLINT
