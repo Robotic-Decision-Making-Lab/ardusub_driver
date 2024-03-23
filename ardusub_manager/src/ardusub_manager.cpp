@@ -82,6 +82,7 @@ CallbackReturn ArduSubManager::on_configure(const rclcpp_lifecycle::State & /*pr
   set_ekf_origin_ = params_.set_ekf_origin;
   set_home_pos_ = params_.set_home_position;
 
+  // Use a reentrant callback group so that we can call the services from within the on_activate/deactivate functions
   callback_group_ = create_callback_group(rclcpp::CallbackGroupType::Reentrant);
 
   if (!params_.message_intervals.ids.empty()) {
@@ -119,7 +120,8 @@ CallbackReturn ArduSubManager::on_configure(const rclcpp_lifecycle::State & /*pr
       });
   }
 
-  set_home_pos_client_ = this->create_client<mavros_msgs::srv::CommandHome>("/mavros/cmd/set_home");
+  set_home_pos_client_ = this->create_client<mavros_msgs::srv::CommandHome>(
+    "/mavros/cmd/set_home", rclcpp::SystemDefaultsQoS(), callback_group_);
 
   RCLCPP_INFO(this->get_logger(), "Successfully configured the ArduSub manager!");  // NOLINT
 
@@ -164,18 +166,21 @@ CallbackReturn ArduSubManager::on_activate(const rclcpp_lifecycle::State & /*pre
     request->altitude = params_.home_position.altitude;
     request->yaw = params_.home_position.yaw;
 
-    auto future = set_home_pos_client_->async_send_request(std::move(request));
+    auto future_result = set_home_pos_client_->async_send_request(std::move(request)).future.share();
+    auto future_status = wait_for_result(future_result, std::chrono::seconds(5));
 
-    if (
-      rclcpp::spin_until_future_complete(this->get_node_base_interface(), future) ==
-      rclcpp::FutureReturnCode::SUCCESS) {
-      if (!future.get()->success) {
-        RCLCPP_ERROR(this->get_logger(), "Failed to set the home position");        // NOLINT
-        RCLCPP_INFO(this->get_logger(), "Failed to activate the ArduSub manager");  // NOLINT
-        return CallbackReturn::ERROR;
-      }
+    // Check if a timeout occurred
+    if (future_status != std::future_status::ready) {
+      RCLCPP_ERROR(this->get_logger(), "A timeout occurred while attempting to set the home position");  // NOLINT
+      RCLCPP_INFO(this->get_logger(), "Failed to activate the ArduSub manager");                         // NOLINT
+      return CallbackReturn::ERROR;
+    }
 
-      RCLCPP_INFO(this->get_logger(), "Home position set successfully!");  // NOLINT
+    // Check if the request was successful
+    if (!future_result.get()->success) {
+      RCLCPP_ERROR(this->get_logger(), "Failed to set the home position");        // NOLINT
+      RCLCPP_INFO(this->get_logger(), "Failed to activate the ArduSub manager");  // NOLINT
+      return CallbackReturn::ERROR;
     }
   }
 
@@ -206,7 +211,8 @@ CallbackReturn ArduSubManager::on_activate(const rclcpp_lifecycle::State & /*pre
     }
 
     RCLCPP_INFO(  // NOLINT
-      this->get_logger(), "Message interval set successfully for message ID %ld", params_.message_intervals.ids[i]);
+      this->get_logger(), "Message %ld set to publish at a rate of %f hz", params_.message_intervals.ids[i],
+      params_.message_intervals.rates[i]);
   }
 
   RCLCPP_INFO(this->get_logger(), "Successfully activated the ArduSub manager!");  // NOLINT
@@ -226,6 +232,12 @@ CallbackReturn ArduSubManager::on_cleanup(const rclcpp_lifecycle::State & /*prev
 
 CallbackReturn ArduSubManager::on_shutdown(const rclcpp_lifecycle::State & /*previous_state*/)
 {
+  // Release the pointers
+  set_message_intervals_client_.reset();
+  set_home_pos_client_.reset();
+  ekf_origin_pub_.reset();
+  pose_sub_.reset();
+
   return CallbackReturn::SUCCESS;
 }
 
@@ -236,12 +248,11 @@ int main(int argc, char * argv[])
   rclcpp::init(argc, argv);
 
   rclcpp::executors::MultiThreadedExecutor executor;
+
   auto node = std::make_shared<ardusub_manager::ArduSubManager>();
-
   executor.add_node(node->get_node_base_interface());
-  executor.spin();
 
-  // rclcpp::spin(node->get_node_base_interface());
+  executor.spin();
 
   rclcpp::shutdown();
 
