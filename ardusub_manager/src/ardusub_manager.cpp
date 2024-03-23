@@ -38,18 +38,18 @@ template <typename T>
 std::future_status wait_for_result(T & future, std::chrono::seconds timeout)
 {
   auto end_t = std::chrono::steady_clock::now() + timeout;
-  std::chrono::milliseconds wait_time(100);
+  const std::chrono::milliseconds wait_time(100);
   std::future_status status = std::future_status::timeout;
 
   do {
-    auto now = std::chrono::steady_clock::now();
-    auto time_left = end - now;
+    auto current_t = std::chrono::steady_clock::now();
+    auto time_left = end_t - current_t;
 
     if (time_left <= std::chrono::seconds(0)) {
       break;
     }
 
-    status = future.wait_for((time_left < wait_period) ? time_left : wait_period);
+    status = future.wait_for((time_left < wait_time) ? time_left : wait_time);
 
   } while (rclcpp::ok() && status != std::future_status::ready);
 
