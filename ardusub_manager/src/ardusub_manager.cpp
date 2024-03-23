@@ -120,8 +120,8 @@ CallbackReturn ArduSubManager::on_configure(const rclcpp_lifecycle::State & /*pr
       });
   }
 
-  set_home_pos_client_ = this->create_client<mavros_msgs::srv::CommandHome>(
-    "/mavros/cmd/set_home", rclcpp::SystemDefaultsQoS(), callback_group_);
+  set_home_pos_client_ =
+    this->create_client<mavros_msgs::srv::CommandHome>("/mavros/cmd/set_home", rclcpp::SystemDefaultsQoS());
 
   RCLCPP_INFO(this->get_logger(), "Successfully configured the ArduSub manager!");  // NOLINT
 
