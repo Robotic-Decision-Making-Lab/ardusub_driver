@@ -48,7 +48,6 @@ std::future_status wait_for_result(T & future, std::chrono::seconds timeout)
     auto time_left = end_t - current_t;
 
     if (time_left <= std::chrono::seconds(0)) {
-      fprintf(stderr, "Timeout occurred while waiting for a future to be ready\n");
       break;
     }
 
@@ -189,8 +188,8 @@ CallbackReturn ArduSubManager::on_activate(const rclcpp_lifecycle::State & /*pre
     auto future_result = set_message_intervals_client_->async_send_request(std::move(request)).future.share();
     auto future_status = wait_for_result(future_result, std::chrono::seconds(5));
 
-    // Check if a timeout occurred
-    if (future_status != std::future_status::ready) {
+    // Check if a timeout occurred if (future_status != std::future_status::ready)
+    {
       RCLCPP_ERROR(  // NOLINT
         this->get_logger(), "A timeout occurred while attempting to set the message interval for message ID %ld",
         params_.message_intervals.ids[i]);
@@ -236,8 +235,13 @@ int main(int argc, char * argv[])
 {
   rclcpp::init(argc, argv);
 
+  rclcpp::executors::MultiThreadedExecutor executor;
   auto node = std::make_shared<ardusub_manager::ArduSubManager>();
-  rclcpp::spin(node->get_node_base_interface());
+
+  executor.add_node(node->get_node_base_interface());
+  executor.spin();
+
+  // rclcpp::spin(node->get_node_base_interface());
 
   rclcpp::shutdown();
 
