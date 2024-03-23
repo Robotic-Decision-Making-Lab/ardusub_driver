@@ -83,7 +83,7 @@ CallbackReturn ArduSubManager::on_configure(const rclcpp_lifecycle::State & /*pr
   set_home_pos_ = params_.set_home_position;
 
   // Use a reentrant callback group so that we can call the services from within the on_activate/deactivate functions
-  callback_group_ = create_callback_group(rclcpp::CallbackGroupType::Reentrant);
+  set_intervals_callback_group_ = create_callback_group(rclcpp::CallbackGroupType::Reentrant);
 
   if (!params_.message_intervals.ids.empty()) {
     if (params_.message_intervals.rates.size() != params_.message_intervals.ids.size()) {
@@ -92,7 +92,7 @@ CallbackReturn ArduSubManager::on_configure(const rclcpp_lifecycle::State & /*pr
     }
 
     set_message_intervals_client_ = this->create_client<mavros_msgs::srv::MessageInterval>(
-      "/mavros/set_message_interval", rclcpp::SystemDefaultsQoS(), callback_group_);
+      "/mavros/set_message_interval", rclcpp::SystemDefaultsQoS(), set_intervals_callback_group_);
   }
 
   ekf_origin_pub_ = this->create_publisher<geographic_msgs::msg::GeoPointStamped>(
@@ -120,8 +120,10 @@ CallbackReturn ArduSubManager::on_configure(const rclcpp_lifecycle::State & /*pr
       });
   }
 
-  set_home_pos_client_ =
-    this->create_client<mavros_msgs::srv::CommandHome>("/mavros/cmd/set_home", rclcpp::SystemDefaultsQoS());
+  set_home_callback_group_ = create_callback_group(rclcpp::CallbackGroupType::Reentrant);
+
+  set_home_pos_client_ = this->create_client<mavros_msgs::srv::CommandHome>(
+    "/mavros/cmd/set_home", rclcpp::SystemDefaultsQoS(), set_home_callback_group_);
 
   RCLCPP_INFO(this->get_logger(), "Successfully configured the ArduSub manager!");  // NOLINT
 

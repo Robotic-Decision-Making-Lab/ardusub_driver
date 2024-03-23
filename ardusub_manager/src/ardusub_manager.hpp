@@ -68,7 +68,8 @@ private:
   bool set_home_pos_{false};
 
   // Maintain a separate callback group so that the service clients don't hang
-  std::shared_ptr<rclcpp::CallbackGroup> callback_group_;
+  std::shared_ptr<rclcpp::CallbackGroup> set_intervals_callback_group_;
+  std::shared_ptr<rclcpp::CallbackGroup> set_home_callback_group_;
 };
 
 }  // namespace ardusub_manager
