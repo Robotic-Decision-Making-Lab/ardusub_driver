@@ -19,7 +19,6 @@
 # SOFTWARE.
 
 from launch import LaunchDescription
-from launch.actions import Shutdown
 from launch_ros.actions import LifecycleNode
 from launch.actions import EmitEvent
 from launch.actions import RegisterEventHandler
@@ -27,16 +26,22 @@ from launch_ros.events.lifecycle import ChangeState
 from launch_ros.event_handlers import OnStateTransition
 from launch.events import matches_action
 from lifecycle_msgs.msg import Transition
+from launch.substitutions import LaunchConfiguration
+from launch.actions import DeclareLaunchArgument
 
 
 def generate_launch_description():
+    declare_manager_file = DeclareLaunchArgument(
+        "ardusub_manager_file", default_value=""
+    )
+
     ardusub_manager_node = LifecycleNode(
         package="ardusub_manager",
         executable="ardusub_manager",
         name="ardusub_manager",
         namespace="",
         output="screen",
-        on_exit=Shutdown(),
+        parameters=[LaunchConfiguration("ardusub_manager_file")],
     )
 
     configure_event = EmitEvent(
@@ -62,4 +67,6 @@ def generate_launch_description():
         )
     )
 
-    return LaunchDescription([ardusub_manager_node, configure_event, activate_event])
+    return LaunchDescription(
+        [declare_manager_file, ardusub_manager_node, configure_event, activate_event]
+    )
