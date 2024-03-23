@@ -48,6 +48,7 @@ std::future_status wait_for_result(T & future, std::chrono::seconds timeout)
     auto time_left = end_t - current_t;
 
     if (time_left <= std::chrono::seconds(0)) {
+      fprintf(stderr, "Timeout occurred while waiting for a future to be ready\n");
       break;
     }
 
@@ -130,6 +131,7 @@ CallbackReturn ArduSubManager::on_activate(const rclcpp_lifecycle::State & /*pre
 {
   RCLCPP_INFO(this->get_logger(), "Activating the ArduSub manager...");  // NOLINT
 
+  // Set the EKF origin
   if (set_ekf_origin_) {
     RCLCPP_INFO(this->get_logger(), "Setting the EKF origin");  // NOLINT
 
@@ -142,6 +144,7 @@ CallbackReturn ArduSubManager::on_activate(const rclcpp_lifecycle::State & /*pre
     ekf_origin_pub_->publish(ekf_origin);
   }
 
+  // Set the home position
   if (set_home_pos_) {
     while (!set_home_pos_client_->wait_for_service(std::chrono::seconds(1))) {
       if (!rclcpp::ok()) {
@@ -162,7 +165,7 @@ CallbackReturn ArduSubManager::on_activate(const rclcpp_lifecycle::State & /*pre
     request->altitude = params_.home_position.altitude;
     request->yaw = params_.home_position.yaw;
 
-    auto future = set_home_pos_client_->async_send_request(request);
+    auto future = set_home_pos_client_->async_send_request(std::move(request));
 
     if (
       rclcpp::spin_until_future_complete(this->get_node_base_interface(), future) ==
@@ -177,12 +180,13 @@ CallbackReturn ArduSubManager::on_activate(const rclcpp_lifecycle::State & /*pre
     }
   }
 
+  // Set the message intervals
   for (size_t i = 0; i < params_.message_intervals.ids.size(); ++i) {
     auto request = std::make_shared<mavros_msgs::srv::MessageInterval::Request>();
     request->message_id = params_.message_intervals.ids[i];
     request->message_rate = params_.message_intervals.rates[i];
 
-    auto future_result = set_message_intervals_client_->async_send_request(request).future.share();
+    auto future_result = set_message_intervals_client_->async_send_request(std::move(request)).future.share();
     auto future_status = wait_for_result(future_result, std::chrono::seconds(5));
 
     // Check if a timeout occurred
