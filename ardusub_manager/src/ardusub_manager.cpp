@@ -188,8 +188,8 @@ CallbackReturn ArduSubManager::on_activate(const rclcpp_lifecycle::State & /*pre
     auto future_result = set_message_intervals_client_->async_send_request(std::move(request)).future.share();
     auto future_status = wait_for_result(future_result, std::chrono::seconds(5));
 
-    // Check if a timeout occurred if (future_status != std::future_status::ready)
-    {
+    // Check if a timeout occurred
+    if (future_status != std::future_status::ready) {
       RCLCPP_ERROR(  // NOLINT
         this->get_logger(), "A timeout occurred while attempting to set the message interval for message ID %ld",
         params_.message_intervals.ids[i]);
