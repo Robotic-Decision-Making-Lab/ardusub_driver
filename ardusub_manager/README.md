@@ -11,8 +11,8 @@ of functionality that are used by marine vehicles, including:
   enabling its use with ArduSub, which has encouraged this alternative.
 
 > [!IMPORTANT]
-> This node should be launched *after* MAVROS has fully loaded the "local_*",
-> "home_position", and "global_position" plugins.
+> This node should be launched *after* MAVROS has fully loaded the "local_*"
+> and "global_position" plugins.
 
 ## Parameters
 
@@ -26,10 +26,4 @@ of functionality that are used by marine vehicles, including:
   * latitude: The latitude of the EKF origin. [double]
   * longitude: The longitude of the EKF origin. [double]
   * altitude: The altitude of the EKF origin. [double]
-* set_home_position: Whether or not to set the home position on startup. [bool]
-* home_position (only required when `set_home_position = True`):
-  * latitude: The latitude of the home position. [double]
-  * longitude: The longitude of the home position. [double]
-  * altitude: The altitude of the home position. [double]
-  * yaw: The yaw of the home position. [double]
 * publish_tf: Whether or not to publish the TF frames for the vehicle. [bool]

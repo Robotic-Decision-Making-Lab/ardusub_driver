@@ -58,18 +58,11 @@ private:
   std::shared_ptr<rclcpp::Subscription<geometry_msgs::msg::PoseStamped>> pose_sub_;
   std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
 
+  bool set_ekf_origin_{false};
   std::shared_ptr<rclcpp::Publisher<geographic_msgs::msg::GeoPointStamped>> ekf_origin_pub_;
 
   std::shared_ptr<rclcpp::Client<mavros_msgs::srv::MessageInterval>> set_message_intervals_client_;
-
-  std::shared_ptr<rclcpp::Client<mavros_msgs::srv::CommandHome>> set_home_pos_client_;
-
-  bool set_ekf_origin_{false};
-  bool set_home_pos_{false};
-
-  // Maintain a separate callback group so that the service clients don't hang
   std::shared_ptr<rclcpp::CallbackGroup> set_intervals_callback_group_;
-  std::shared_ptr<rclcpp::CallbackGroup> set_home_callback_group_;
 };
 
 }  // namespace ardusub_manager

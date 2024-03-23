@@ -39,38 +39,6 @@ ardusub_manager:
       read_only: true
     }
   }
-  set_home_position: {
-    type: bool,
-    default_value: false,
-    description: "Whether or not to set the home position on startup.",
-    read_only: true
-  }
-  home_position: {
-    latitude: {
-      type: double,
-      default_value: 44.65870,
-      description: "The latitude of the home position.",
-      read_only: true
-    },
-    longitude: {
-      type: double,
-      default_value: -124.06556,
-      description: "The longitude of the home position.",
-      read_only: true
-    },
-    altitude: {
-      type: double,
-      default_value: 0.0,
-      description: "The altitude of the home position.",
-      read_only: true
-    },
-    yaw: {
-      type: double,
-      default_value: 270.0,
-      description: "The yaw of the home position.",
-      read_only: true
-    }
-  }
   publish_tf: {
     type: bool,
     default_value: true,
