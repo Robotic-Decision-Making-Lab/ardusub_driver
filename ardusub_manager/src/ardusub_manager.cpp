@@ -60,7 +60,7 @@ std::future_status wait_for_result(T & future, std::chrono::seconds timeout)
 
 }  // namespace
 
-ArduSubManager::ArduSubManager()
+ArduSubManager::ArduSubManager()  // NOLINT
 : rclcpp_lifecycle::LifecycleNode("ardusub_manager")
 {
 }
@@ -130,6 +130,15 @@ CallbackReturn ArduSubManager::on_activate(const rclcpp_lifecycle::State & /*pre
 
   // Set the EKF origin
   if (set_ekf_origin_) {
+    while (ekf_origin_pub_->get_subscription_count() == 0) {
+      if (!rclcpp::ok()) {
+        RCLCPP_INFO(this->get_logger(), "Interrupted while waiting for the EKF origin subscriber to exist");  // NOLINT
+        return CallbackReturn::ERROR;
+      }
+      RCLCPP_INFO(this->get_logger(), "Waiting for the EKF origin subscriber to exist...");  // NOLINT
+      std::this_thread::sleep_for(std::chrono::seconds(1));
+    }
+
     RCLCPP_INFO(this->get_logger(), "Setting the EKF origin");  // NOLINT
 
     geographic_msgs::msg::GeoPointStamped ekf_origin;
@@ -139,6 +148,18 @@ CallbackReturn ArduSubManager::on_activate(const rclcpp_lifecycle::State & /*pre
     ekf_origin.position.altitude = params_.ekf_origin.altitude;
 
     ekf_origin_pub_->publish(ekf_origin);
+  }
+
+  // Wait for the message interval client to exist
+  if (!params_.message_intervals.ids.empty()) {
+    while (!set_message_intervals_client_->wait_for_service(std::chrono::seconds(1))) {
+      if (!rclcpp::ok()) {
+        RCLCPP_INFO(  // NOLINT
+          this->get_logger(), "Interrupted while waiting for the message interval service to exist");
+        return CallbackReturn::ERROR;
+      }
+      RCLCPP_INFO(this->get_logger(), "Waiting for the message interval service to exist...");  // NOLINT
+    }
   }
 
   // Set the message intervals
@@ -187,11 +208,6 @@ CallbackReturn ArduSubManager::on_cleanup(const rclcpp_lifecycle::State & /*prev
 
 CallbackReturn ArduSubManager::on_shutdown(const rclcpp_lifecycle::State & /*previous_state*/)
 {
-  // Release the pointers
-  set_message_intervals_client_.reset();
-  ekf_origin_pub_.reset();
-  pose_sub_.reset();
-
   return CallbackReturn::SUCCESS;
 }
 
