@@ -94,8 +94,9 @@ CallbackReturn ArduSubManager::on_configure(const rclcpp_lifecycle::State & /*pr
       "/mavros/set_message_interval", rclcpp::SystemDefaultsQoS(), set_intervals_callback_group_);
   }
 
-  ekf_origin_pub_ = this->create_publisher<geographic_msgs::msg::GeoPointStamped>(
-    "/mavros/global_position/set_gp_origin", rclcpp::SystemDefaultsQoS());
+  auto qos = rclcpp::QoS(rclcpp::KeepLast(10)).transient_local().reliable();
+  ekf_origin_pub_ =
+    this->create_publisher<geographic_msgs::msg::GeoPointStamped>("/mavros/global_position/set_gp_origin", qos);
 
   // Publish the system TF
   if (params_.publish_tf) {
@@ -130,15 +131,6 @@ CallbackReturn ArduSubManager::on_activate(const rclcpp_lifecycle::State & /*pre
 
   // Set the EKF origin
   if (set_ekf_origin_) {
-    while (ekf_origin_pub_->get_subscription_count() == 0) {
-      if (!rclcpp::ok()) {
-        RCLCPP_INFO(this->get_logger(), "Interrupted while waiting for the EKF origin subscriber to exist");  // NOLINT
-        return CallbackReturn::ERROR;
-      }
-      RCLCPP_INFO(this->get_logger(), "Waiting for the EKF origin subscriber to exist...");  // NOLINT
-      std::this_thread::sleep_for(std::chrono::seconds(1));
-    }
-
     RCLCPP_INFO(this->get_logger(), "Setting the EKF origin");  // NOLINT
 
     geographic_msgs::msg::GeoPointStamped ekf_origin;
