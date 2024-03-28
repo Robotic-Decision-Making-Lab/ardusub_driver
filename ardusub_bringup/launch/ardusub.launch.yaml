@@ -39,7 +39,7 @@ launch:
 
   # Includes
   - include:
-      file: $(find-pkg-share ardusub_bringup)/launch/ardusub/sitl.launch.yaml
+      file: $(find-pkg-share ardusub_bringup)/launch/sitl.launch.yaml
       if: $(var use_sim)
       arg:
         - name: model_name
