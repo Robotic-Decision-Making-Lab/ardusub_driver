@@ -52,6 +52,11 @@ public:
   CallbackReturn on_shutdown(const rclcpp_lifecycle::State & previous_state) override;
 
 private:
+  // Inspiration for the following two methods was taken from the Orca4 project here:
+  // https://github.com/clydemcqueen/orca4/blob/77152829e1d65781717ca55379c229145d6006e9/orca_base/src/manager.cpp#L407
+  void set_message_rate(int64_t msg_id, double rate) const;
+  void set_message_rates(const std::vector<int64_t> & msg_ids, const std::vector<double> & rates) const;
+
   std::shared_ptr<ardusub_manager::ParamListener> param_listener_;
   ardusub_manager::Params params_;
 
@@ -60,9 +65,11 @@ private:
 
   bool set_ekf_origin_{false};
   std::shared_ptr<rclcpp::Publisher<geographic_msgs::msg::GeoPointStamped>> ekf_origin_pub_;
+  std::shared_ptr<rclcpp::TimerBase> set_ekf_origin_timer_;
 
   std::shared_ptr<rclcpp::Client<mavros_msgs::srv::MessageInterval>> set_message_intervals_client_;
   std::shared_ptr<rclcpp::CallbackGroup> set_intervals_callback_group_;
+  std::shared_ptr<rclcpp::TimerBase> set_intervals_timer_;
 };
 
 }  // namespace ardusub_manager

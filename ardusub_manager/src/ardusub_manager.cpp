@@ -43,11 +43,12 @@ std::future_status wait_for_result(T & future, std::chrono::seconds timeout)
   const std::chrono::milliseconds wait_time(100);
   std::future_status status = std::future_status::timeout;
 
+  using namespace std::chrono_literals;
   do {
     auto current_t = std::chrono::steady_clock::now();
     auto time_left = end_t - current_t;
 
-    if (time_left <= std::chrono::seconds(0)) {
+    if (time_left <= 0s) {
       break;
     }
 
@@ -63,6 +64,36 @@ std::future_status wait_for_result(T & future, std::chrono::seconds timeout)
 ArduSubManager::ArduSubManager()  // NOLINT
 : rclcpp_lifecycle::LifecycleNode("ardusub_manager")
 {
+}
+
+void ArduSubManager::set_message_rate(int64_t msg_id, double rate) const
+{
+  auto request = std::make_shared<mavros_msgs::srv::MessageInterval::Request>();
+  request->message_id = msg_id;
+  request->message_rate = rate;
+
+  using namespace std::chrono_literals;
+
+  auto future_result = set_message_intervals_client_->async_send_request(std::move(request)).future.share();
+  auto future_status = wait_for_result(future_result, 5s);
+
+  if (future_status != std::future_status::ready) {
+    RCLCPP_ERROR(  // NOLINT
+      this->get_logger(), "A timeout occurred while attempting to set the message interval for message ID %ld", msg_id);
+  }
+
+  if (!future_result.get()->success) {
+    RCLCPP_ERROR(this->get_logger(), "Failed to set the message interval for message ID %ld", msg_id);  // NOLINT
+  }
+
+  RCLCPP_INFO(this->get_logger(), "Message %ld set to publish at a rate of %f hz", msg_id, rate);  // NOLINT
+}
+
+void ArduSubManager::set_message_rates(const std::vector<int64_t> & msg_ids, const std::vector<double> & rates) const
+{
+  for (size_t i = 0; i < msg_ids.size(); ++i) {
+    set_message_rate(msg_ids[i], rates[i]);
+  }
 }
 
 CallbackReturn ArduSubManager::on_configure(const rclcpp_lifecycle::State & /*previous_state*/)
@@ -81,6 +112,8 @@ CallbackReturn ArduSubManager::on_configure(const rclcpp_lifecycle::State & /*pr
 
   set_ekf_origin_ = params_.set_ekf_origin;
 
+  using namespace std::chrono_literals;
+
   // Use a reentrant callback group so that we can call the service from within the on_activate/deactivate functions
   set_intervals_callback_group_ = create_callback_group(rclcpp::CallbackGroupType::Reentrant);
 
@@ -92,11 +125,35 @@ CallbackReturn ArduSubManager::on_configure(const rclcpp_lifecycle::State & /*pr
 
     set_message_intervals_client_ = this->create_client<mavros_msgs::srv::MessageInterval>(
       "/mavros/set_message_interval", rclcpp::SystemDefaultsQoS(), set_intervals_callback_group_);
+
+    set_intervals_timer_ = this->create_wall_timer(
+      30s, [this]() -> void { set_message_rates(params_.message_intervals.ids, params_.message_intervals.rates); });
+
+    // Wait to start the timer until the manager has been activated
+    set_intervals_timer_->cancel();
   }
 
-  auto qos = rclcpp::QoS(rclcpp::KeepLast(10)).transient_local().reliable();
-  ekf_origin_pub_ =
-    this->create_publisher<geographic_msgs::msg::GeoPointStamped>("/mavros/global_position/set_gp_origin", qos);
+  if (set_ekf_origin_) {
+    // Setup the publisher for the EKF origin
+    auto qos = rclcpp::QoS(rclcpp::KeepLast(10)).transient_local().reliable();
+    ekf_origin_pub_ =
+      this->create_publisher<geographic_msgs::msg::GeoPointStamped>("/mavros/global_position/set_gp_origin", qos);
+
+    // Periodically publish the EKF origin
+    set_ekf_origin_timer_ = this->create_wall_timer(30s, [this]() -> void {
+      RCLCPP_INFO(this->get_logger(), "Setting the EKF origin");  // NOLINT
+      geographic_msgs::msg::GeoPointStamped ekf_origin;
+      ekf_origin.header.stamp = this->get_clock()->now();
+      ekf_origin.position.latitude = params_.ekf_origin.latitude;
+      ekf_origin.position.longitude = params_.ekf_origin.longitude;
+      ekf_origin.position.altitude = params_.ekf_origin.altitude;
+
+      ekf_origin_pub_->publish(ekf_origin);
+    });
+
+    // Wait to start the timer until the manager has been activated
+    set_ekf_origin_timer_->cancel();
+  }
 
   // Publish the system TF
   if (params_.publish_tf) {
@@ -129,22 +186,16 @@ CallbackReturn ArduSubManager::on_activate(const rclcpp_lifecycle::State & /*pre
 {
   RCLCPP_INFO(this->get_logger(), "Activating the ArduSub manager...");  // NOLINT
 
+  using namespace std::chrono_literals;
+
   // Set the EKF origin
   if (set_ekf_origin_) {
-    RCLCPP_INFO(this->get_logger(), "Setting the EKF origin");  // NOLINT
-
-    geographic_msgs::msg::GeoPointStamped ekf_origin;
-    ekf_origin.header.stamp = this->get_clock()->now();
-    ekf_origin.position.latitude = params_.ekf_origin.latitude;
-    ekf_origin.position.longitude = params_.ekf_origin.longitude;
-    ekf_origin.position.altitude = params_.ekf_origin.altitude;
-
-    ekf_origin_pub_->publish(ekf_origin);
+    set_ekf_origin_timer_->reset();
   }
 
-  // Wait for the message interval client to exist
+  // Set the message intervals
   if (!params_.message_intervals.ids.empty()) {
-    while (!set_message_intervals_client_->wait_for_service(std::chrono::seconds(1))) {
+    while (!set_message_intervals_client_->wait_for_service(1s)) {
       if (!rclcpp::ok()) {
         RCLCPP_INFO(  // NOLINT
           this->get_logger(), "Interrupted while waiting for the message interval service to exist");
@@ -152,35 +203,8 @@ CallbackReturn ArduSubManager::on_activate(const rclcpp_lifecycle::State & /*pre
       }
       RCLCPP_INFO(this->get_logger(), "Waiting for the message interval service to exist...");  // NOLINT
     }
-  }
 
-  // Set the message intervals
-  for (size_t i = 0; i < params_.message_intervals.ids.size(); ++i) {
-    auto request = std::make_shared<mavros_msgs::srv::MessageInterval::Request>();
-    request->message_id = params_.message_intervals.ids[i];
-    request->message_rate = params_.message_intervals.rates[i];
-
-    auto future_result = set_message_intervals_client_->async_send_request(std::move(request)).future.share();
-    auto future_status = wait_for_result(future_result, std::chrono::seconds(5));
-
-    if (future_status != std::future_status::ready) {
-      RCLCPP_ERROR(  // NOLINT
-        this->get_logger(), "A timeout occurred while attempting to set the message interval for message ID %ld",
-        params_.message_intervals.ids[i]);
-      RCLCPP_INFO(this->get_logger(), "Failed to activate the ArduSub manager");  // NOLINT
-      return CallbackReturn::ERROR;
-    }
-
-    if (!future_result.get()->success) {
-      RCLCPP_ERROR(  // NOLINT
-        this->get_logger(), "Failed to set the message interval for message ID %ld", params_.message_intervals.ids[i]);
-      RCLCPP_INFO(this->get_logger(), "Failed to activate the ArduSub manager");  // NOLINT
-      return CallbackReturn::ERROR;
-    }
-
-    RCLCPP_INFO(  // NOLINT
-      this->get_logger(), "Message %ld set to publish at a rate of %f hz", params_.message_intervals.ids[i],
-      params_.message_intervals.rates[i]);
+    set_intervals_timer_->reset();
   }
 
   RCLCPP_INFO(this->get_logger(), "Successfully activated the ArduSub manager!");  // NOLINT
@@ -190,6 +214,11 @@ CallbackReturn ArduSubManager::on_activate(const rclcpp_lifecycle::State & /*pre
 
 CallbackReturn ArduSubManager::on_deactivate(const rclcpp_lifecycle::State & /*previous_state*/)
 {
+  RCLCPP_INFO(this->get_logger(), "Deactivating the ArduSub manager...");  // NOLINT
+
+  set_intervals_timer_->cancel();
+  set_ekf_origin_timer_->cancel();
+
   return CallbackReturn::SUCCESS;
 }
 
