@@ -127,7 +127,7 @@ CallbackReturn ArduSubManager::on_configure(const rclcpp_lifecycle::State & /*pr
       "/mavros/set_message_interval", rclcpp::SystemDefaultsQoS(), set_intervals_callback_group_);
 
     set_intervals_timer_ = this->create_wall_timer(
-      30s, [this]() -> void { set_message_rates(params_.message_intervals.ids, params_.message_intervals.rates); });
+      20s, [this]() -> void { set_message_rates(params_.message_intervals.ids, params_.message_intervals.rates); });
 
     // Wait to start the timer until the manager has been activated
     set_intervals_timer_->cancel();
@@ -140,7 +140,7 @@ CallbackReturn ArduSubManager::on_configure(const rclcpp_lifecycle::State & /*pr
       this->create_publisher<geographic_msgs::msg::GeoPointStamped>("/mavros/global_position/set_gp_origin", qos);
 
     // Periodically publish the EKF origin
-    set_ekf_origin_timer_ = this->create_wall_timer(30s, [this]() -> void {
+    set_ekf_origin_timer_ = this->create_wall_timer(20s, [this]() -> void {
       RCLCPP_INFO(this->get_logger(), "Setting the EKF origin");  // NOLINT
       geographic_msgs::msg::GeoPointStamped ekf_origin;
       ekf_origin.header.stamp = this->get_clock()->now();
