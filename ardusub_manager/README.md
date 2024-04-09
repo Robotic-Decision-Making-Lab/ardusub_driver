@@ -4,7 +4,6 @@ The ArduSub manager provides a high-level interface for some common pieces
 of functionality that are used by marine vehicles, including:
 
 * Setting the message intervals for MAVLINK messages
-* Setting the home position of the vehicle
 * Setting the EKF origin of the vehicle
 * Publishing the `map -> base_link` transformation. Support for this
   *technically* exists in MAVROS, but we have encountered difficulties

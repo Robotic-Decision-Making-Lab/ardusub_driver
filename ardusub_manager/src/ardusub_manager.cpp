@@ -86,7 +86,7 @@ void ArduSubManager::set_message_rate(int64_t msg_id, double rate) const
     RCLCPP_ERROR(this->get_logger(), "Failed to set the message interval for message ID %ld", msg_id);  // NOLINT
   }
 
-  RCLCPP_INFO(this->get_logger(), "Message %ld set to publish at a rate of %f hz", msg_id, rate);  // NOLINT
+  RCLCPP_DEBUG(this->get_logger(), "Message %ld set to publish at a rate of %f hz", msg_id, rate);  // NOLINT
 }
 
 void ArduSubManager::set_message_rates(const std::vector<int64_t> & msg_ids, const std::vector<double> & rates) const
@@ -141,7 +141,7 @@ CallbackReturn ArduSubManager::on_configure(const rclcpp_lifecycle::State & /*pr
 
     // Periodically publish the EKF origin
     set_ekf_origin_timer_ = this->create_wall_timer(20s, [this]() -> void {
-      RCLCPP_INFO(this->get_logger(), "Setting the EKF origin");  // NOLINT
+      RCLCPP_DEBUG(this->get_logger(), "Setting the EKF origin");  // NOLINT
       geographic_msgs::msg::GeoPointStamped ekf_origin;
       ekf_origin.header.stamp = this->get_clock()->now();
       ekf_origin.position.latitude = params_.ekf_origin.latitude;
