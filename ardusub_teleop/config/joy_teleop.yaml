@@ -24,7 +24,7 @@ joy_teleop:
       service_name: /joy_interface/enable_pwm_control
       buttons: [4]
       service_request:
-        data: False
+        data: True
 
     arm_ardusub:
       type: service
