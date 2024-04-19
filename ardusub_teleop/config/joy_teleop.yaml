@@ -14,17 +14,17 @@ joy_teleop:
       type: service
       interface_type: std_srvs/srv/SetBool
       service_name: /joy_interface/enable_pwm_control
-      deadman_buttons: [5]
+      buttons: [5]
       service_request:
-        value: False
+        data: False
 
     pwm_control:
       type: service
       interface_type: std_srvs/srv/SetBool
       service_name: /joy_interface/enable_pwm_control
-      deadman_buttons: [4]
+      buttons: [4]
       service_request:
-        value: True
+        data: False
 
     arm_ardusub:
       type: service

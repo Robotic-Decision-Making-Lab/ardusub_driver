@@ -65,7 +65,7 @@ launch:
           value: $(var manager_file)
 
   - include:
-      file: $(find-pkg-share ardusub_teleop)/launch/joy_interface.launch.yaml
+      file: $(find-pkg-share ardusub_teleop)/launch/teleop.launch.yaml
       if: $(var use_joy)
       arg:
         - name: joy_file
