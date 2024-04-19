@@ -52,17 +52,21 @@ public:
   CallbackReturn on_shutdown(const rclcpp_lifecycle::State & previous_state) override;
 
 private:
+<<<<<<< HEAD
   // Inspiration for the following two methods was taken from the Orca4 project here:
   // https://github.com/clydemcqueen/orca4/blob/77152829e1d65781717ca55379c229145d6006e9/orca_base/src/manager.cpp#L407
   void set_message_rate(int64_t msg_id, double rate) const;
   void set_message_rates(const std::vector<int64_t> & msg_ids, const std::vector<double> & rates) const;
 
+=======
+>>>>>>> origin/main
   std::shared_ptr<ardusub_manager::ParamListener> param_listener_;
   ardusub_manager::Params params_;
 
   std::shared_ptr<rclcpp::Subscription<geometry_msgs::msg::PoseStamped>> pose_sub_;
   std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
 
+<<<<<<< HEAD
   bool set_ekf_origin_{false};
   std::shared_ptr<rclcpp::Publisher<geographic_msgs::msg::GeoPointStamped>> ekf_origin_pub_;
   std::shared_ptr<rclcpp::TimerBase> set_ekf_origin_timer_;
@@ -70,6 +74,16 @@ private:
   std::shared_ptr<rclcpp::Client<mavros_msgs::srv::MessageInterval>> set_message_intervals_client_;
   std::shared_ptr<rclcpp::CallbackGroup> set_intervals_callback_group_;
   std::shared_ptr<rclcpp::TimerBase> set_intervals_timer_;
+=======
+  std::shared_ptr<rclcpp::Publisher<geographic_msgs::msg::GeoPointStamped>> ekf_origin_pub_;
+
+  std::shared_ptr<rclcpp::Client<mavros_msgs::srv::MessageInterval>> set_message_intervals_client_;
+
+  std::shared_ptr<rclcpp::Client<mavros_msgs::srv::CommandHome>> set_home_pos_client_;
+
+  bool set_ekf_origin_{false};
+  bool set_home_pos_{false};
+>>>>>>> origin/main
 };
 
 }  // namespace ardusub_manager
