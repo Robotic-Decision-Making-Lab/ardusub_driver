@@ -13,6 +13,10 @@ launch:
       default: "false"
 
   - arg:
+      name: use_joy
+      default: "false"
+
+  - arg:
       name: model_name
       default: ""
 
@@ -27,6 +31,10 @@ launch:
   - arg:
       name: manager_file
       default: ""
+
+  - arg:
+      name: joy_file
+      default: $(find-pkg-share ardusub_teleop)/config/joy_teleop.yaml
 
   # Nodes
   - node:
@@ -55,3 +63,10 @@ launch:
       arg:
         - name: ardusub_manager_file
           value: $(var manager_file)
+
+  - include:
+      file: $(find-pkg-share ardusub_teleop)/launch/joy_interface.launch.yaml
+      if: $(var use_joy)
+      arg:
+        - name: joy_file
+          value: $(var joy_file)
