@@ -26,7 +26,7 @@ ament_target_dependencies(joy_interface PUBLIC ${THIS_PACKAGE_INCLUDE_DEPENDS})
 
 install(
   TARGETS joy_interface
-  DESTINATION lib/joy_interface
+  DESTINATION lib/ardusub_teleop
 )
 
 install(
