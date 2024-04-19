@@ -1,6 +1,6 @@
 # ardusub_manager
 
-The ArduSub manager provides a high-level interface for some common pieces
+ardusub_manager provides a high-level interface for some common pieces
 of functionality that are used by marine vehicles, including:
 
 * Setting the message intervals for MAVLINK messages
