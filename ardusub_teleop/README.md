@@ -35,5 +35,5 @@ into `mavros_msgs/OverrideRCIn` messages and publishes them on the topic
 
 > [!IMPORTANT]
 > The current configuration uses the left trigger as a deadman switch for
-> manual control. This buttom must be pressed and released to enable manual
+> manual control. This button must be pressed and released to enable manual
 > control.
