@@ -3,7 +3,7 @@
 ardusub_driver is a collection of packages designed to enable integration of
 ROS 2 into marine vehicles that use ArduSub (e.g., the [BlueROV](https://bluerobotics.com/)).
 You can learn more about the features that ardusub_driver offers in the
-documentation provided in each package.
+documentation provided by each package.
 
 ## Installation
 
