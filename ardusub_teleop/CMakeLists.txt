@@ -31,7 +31,7 @@ install(
 
 install(
   DIRECTORY config launch
-  DESTINATION share/joy_interface
+  DESTINATION share/ardusub_teleop
 )
 
 ament_package()
