@@ -1,0 +1,72 @@
+launch:
+
+  # Arguments
+  - arg:
+      name: mavros_file
+
+  - arg:
+      name: use_sim
+      default: "false"
+
+  - arg:
+      name: use_manager
+      default: "false"
+
+  - arg:
+      name: use_joy
+      default: "false"
+
+  - arg:
+      name: model_name
+      default: ""
+
+  - arg:
+      name: gazebo_world_file
+      default: ""
+
+  - arg:
+      name: ardusub_params_file
+      default: ""
+
+  - arg:
+      name: manager_file
+      default: ""
+
+  - arg:
+      name: joy_file
+      default: $(find-pkg-share ardusub_teleop)/config/joy_teleop.yaml
+
+  # Nodes
+  - node:
+      pkg: mavros
+      exec: mavros_node
+      param:
+        - from: $(var mavros_file)
+        - name: use_sim_time
+          value: $(var use_sim)
+
+  # Includes
+  - include:
+      file: $(find-pkg-share ardusub_bringup)/launch/sitl.launch.yaml
+      if: $(var use_sim)
+      arg:
+        - name: model_name
+          value: $(var model_name)
+        - name: gazebo_world_file
+          value: $(var gazebo_world_file)
+        - name: ardusub_params_file
+          value: $(var ardusub_params_file)
+
+  - include:
+      file: $(find-pkg-share ardusub_manager)/launch/ardusub_manager.launch.py
+      if: $(var use_manager)
+      arg:
+        - name: ardusub_manager_file
+          value: $(var manager_file)
+
+  - include:
+      file: $(find-pkg-share ardusub_teleop)/launch/teleop.launch.yaml
+      if: $(var use_joy)
+      arg:
+        - name: joy_file
+          value: $(var joy_file)

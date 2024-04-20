@@ -39,4 +39,9 @@ install(
   DESTINATION lib/ardusub_manager
 )
 
+install(
+  DIRECTORY launch
+  DESTINATION share/ardusub_manager
+)
+
 ament_package()

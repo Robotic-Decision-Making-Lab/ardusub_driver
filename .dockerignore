@@ -6,3 +6,6 @@
 
 # Allow your ROS 2 packages here, e.g.:
 !thruster_hardware
+!ardusub_bringup
+!ardusub_manager
+!ardusub_teleop

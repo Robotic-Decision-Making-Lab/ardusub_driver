@@ -129,7 +129,8 @@ hardware_interface::CallbackReturn ThrusterHardware::on_configure(const rclcpp_l
 
   set_params_client_ = node_->create_client<rcl_interfaces::srv::SetParameters>("mavros/param/set_parameters");
 
-  while (!set_params_client_->wait_for_service(std::chrono::seconds(1))) {
+  using namespace std::chrono_literals;
+  while (!set_params_client_->wait_for_service(1s)) {
     if (!rclcpp::ok()) {
       RCLCPP_ERROR(  // NOLINT
         rclcpp::get_logger("ThrusterHardware"), "Interrupted while waiting for the `mavros/set_parameters` service.");

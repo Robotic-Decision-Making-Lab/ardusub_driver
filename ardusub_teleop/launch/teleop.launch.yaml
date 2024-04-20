@@ -1,0 +1,24 @@
+launch:
+
+  - arg:
+      name: joy_file
+
+  - node:
+      pkg: ardusub_teleop
+      exec: joy_interface
+      param:
+        - from: $(var joy_file)
+
+  - node:
+      pkg: joy_linux
+      exec: joy_linux_node
+      output: screen
+      param:
+        - from: $(var joy_file)
+
+  - node:
+      pkg: joy_teleop
+      exec: joy_teleop
+      output: screen
+      param:
+        - from: $(var joy_file)

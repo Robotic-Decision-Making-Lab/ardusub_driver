@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+
+  <name>ardusub_teleop</name>
+  <version>0.0.1</version>
+  <description>Implements support for ROS 2 joystick control of an ArduSub vehicle</description>
+
+  <maintainer email="evanp922@gmail.com">Evan Palmer</maintainer>
+  <license>MIT</license>
+
+  <url type="repository">https://github.com/Robotic-Decision-Making-Lab/ardusub_driver.git</url>
+  <url type="bugtracker">https://github.com/Robotic-Decision-Making-Lab/ardusub_driver/issues</url>
+
+  <author>Evan Palmer</author>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <depend>rclcpp</depend>
+  <depend>std_srvs</depend>
+  <depend>mavros_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <exec_depend>joy_teleop</exec_depend>
+  <exec_depend>joy_linux</exec_depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
