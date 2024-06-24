@@ -270,12 +270,12 @@ std::vector<hardware_interface::StateInterface> ThrusterHardware::export_state_i
 
 std::vector<hardware_interface::CommandInterface> ThrusterHardware::export_command_interfaces()
 {
-  // std::vector<hardware_interface::CommandInterface> command_interfaces;
-  // command_interfaces.reserve(info_.joints.size());
+  std::vector<hardware_interface::CommandInterface> command_interfaces;
+  command_interfaces.reserve(info_.joints.size());
 
-  // for (size_t i = 0; i < info_.joints.size(); ++i) {
-  //   command_interfaces.emplace_back(info_.joints[i].name, "pwm", &hw_commands_pwm_[i]);
-  // }
+  for (size_t i = 0; i < info_.joints.size(); ++i) {
+    command_interfaces.emplace_back(info_.joints[i].name, "pwm", &hw_commands_pwm_[i]);
+  }
 
   return command_interfaces;
 }
