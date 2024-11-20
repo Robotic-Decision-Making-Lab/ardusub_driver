@@ -15,6 +15,7 @@ set(THIS_PACKAGE_INCLUDE_DEPENDS
   rclcpp_lifecycle
   realtime_tools
   nav_msgs
+  tf2
 )
 
 find_package(ament_cmake REQUIRED)
@@ -24,14 +25,7 @@ endforeach()
 
 add_library(thruster_hardware SHARED
   src/hardware.cpp
-  src/test_odom_subs.cpp
 )
-
-add_executable(test_odom_subs
-  src/test_odom_subs.cpp
-)
-ament_target_dependencies(test_odom_subs rclcpp nav_msgs)
-target_link_libraries(test_odom_subs thruster_hardware)
 
 target_include_directories(thruster_hardware
   PUBLIC
@@ -64,7 +58,6 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 endif()
 install(TARGETS
-  test_odom_subs
   DESTINATION lib/${PROJECT_NAME})
 
 install(
