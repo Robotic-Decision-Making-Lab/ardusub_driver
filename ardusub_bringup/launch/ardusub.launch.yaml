@@ -5,6 +5,10 @@ launch:
       name: mavros_file
 
   - arg:
+      name: prefix
+      default: ""
+
+  - arg:
       name: use_sim
       default: "false"
 
@@ -56,6 +60,8 @@ launch:
           value: $(var gazebo_world_file)
         - name: ardusub_params_file
           value: $(var ardusub_params_file)
+        - name: prefix
+          value: $(var prefix)
 
   - include:
       file: $(find-pkg-share ardusub_manager)/launch/ardusub_manager.launch.py
