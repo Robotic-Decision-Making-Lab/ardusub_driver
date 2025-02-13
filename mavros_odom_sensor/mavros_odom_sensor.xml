@@ -1,0 +1,11 @@
+<library path="mavros_odom_sensor">
+
+  <class name="mavros_odom_sensor/MavrosOdomSensor"
+    type="mavros_odom_sensor::MavrosOdomSensor"
+    base_class_type="hardware_interface::SystemInterface">
+    <description>
+      TODO: Describe the class here
+    </description>
+  </class>
+
+</library>
