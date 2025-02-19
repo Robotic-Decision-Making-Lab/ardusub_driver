@@ -14,8 +14,6 @@ set(THIS_PACKAGE_INCLUDE_DEPENDS
   rcl_interfaces
   rclcpp_lifecycle
   realtime_tools
-  nav_msgs
-  tf2
 )
 
 find_package(ament_cmake REQUIRED)

@@ -23,10 +23,6 @@
 #include "hardware_interface/types/hardware_interface_type_values.hpp"
 #include "rclcpp/rclcpp.hpp"
 
-#include "nav_msgs/msg/odometry.hpp"
-#include "tf2/LinearMath/Quaternion.h"
-#include "tf2/LinearMath/Matrix3x3.h"
-
 namespace thruster_hardware
 {
 
@@ -72,6 +68,10 @@ hardware_interface::CallbackReturn ThrusterHardware::on_init(const hardware_inte
     return hardware_interface::CallbackReturn::ERROR;
   }
   max_retries_ = std::stoi(info_.hardware_parameters.at("max_set_param_attempts"));
+  namespace_ = info_.hardware_parameters.at("namespace");
+  if (namespace_ != "") {
+    namespace_ = "/" + namespace_ ;
+  }
 
   // Store the thruster configurations
   thruster_configs_.reserve(info_.joints.size());
@@ -106,27 +106,22 @@ hardware_interface::CallbackReturn ThrusterHardware::on_init(const hardware_inte
 
   // Construct a node to use for interacting with MAVROS
   rclcpp::NodeOptions options;
-  options.arguments({"--ros-args", "-r", "__node:=thruster_hardware" + info_.name});
+  if (namespace_ != "")
+  {
+    std::string node_name_ = namespace_ + "thruster_hardware" + "/" + info_.name;
+    std::vector<std::string> node_name_vec_ = split(node_name_, '/');
+    std::string ns_ = concatenate_strings(std::vector<std::string>(node_name_vec_.begin(), node_name_vec_.end() - 1));
+    options.arguments({"--ros-args", "-r","__ns:=" + ns_, "-r", "__node:=" + node_name_vec_.back()});
+  }
+  else
+  {
+    options.arguments({"--ros-args", "-r", "__node:=thruster_hardware" + info_.name});
+  }
   node_ = rclcpp::Node::make_shared("_", options);
-
-  rclcpp::NodeOptions options_odom;
-  options_odom.arguments({"--ros-args", "-r", "__node:=thruster_hardware_odom"});
-  node_odom_ = rclcpp::Node::make_shared("_", options_odom);
 
   RCLCPP_INFO(  // NOLINT
     rclcpp::get_logger("ThrusterHardware"), "Successfully initialized ThrusterHardware system interface!");
 
-
-  // Check and Initialize the state interface configuration
-  if (info_.hardware_parameters.find("is_odom_si_present") != info_.hardware_parameters.cend()) {
-    RCLCPP_INFO(  // NOLINT
-      rclcpp::get_logger("ThrusterHardware"), "The 'is_odom_si_present' parameter is set to %s.", info_.hardware_parameters.at("is_odom_si_present").c_str());
-    is_odom_state_interface_configured_ = info_.hardware_parameters.at("is_odom_si_present");
-  } else {
-    RCLCPP_INFO(  // NOLINT
-      rclcpp::get_logger("ThrusterHardware"), "The 'is_odom_si_present' parameter is not set.");
-    is_odom_state_interface_configured_ = "false";
-}
   return hardware_interface::CallbackReturn::SUCCESS;
 }
 
@@ -135,8 +130,18 @@ hardware_interface::CallbackReturn ThrusterHardware::on_configure(const rclcpp_l
   RCLCPP_INFO(  // NOLINT
     rclcpp::get_logger("ThrusterHardware"), "Configuring the ThrusterHardware system interface.");
 
+  std::string node_name_;
+  if (namespace_ != "")
+  {
+    node_name_ = namespace_ + "rc/override";
+  }
+  else
+  {
+    node_name_ = "mavros/rc/override";
+  }
+
   override_rc_pub_ =
-    node_->create_publisher<mavros_msgs::msg::OverrideRCIn>("mavros/rc/override", rclcpp::SystemDefaultsQoS());
+    node_->create_publisher<mavros_msgs::msg::OverrideRCIn>(node_name_, rclcpp::SystemDefaultsQoS());
   rt_override_rc_pub_ =
     std::make_unique<realtime_tools::RealtimePublisher<mavros_msgs::msg::OverrideRCIn>>(override_rc_pub_);
 
@@ -145,25 +150,27 @@ hardware_interface::CallbackReturn ThrusterHardware::on_configure(const rclcpp_l
     channel = mavros_msgs::msg::OverrideRCIn::CHAN_NOCHANGE;
   }
   rt_override_rc_pub_->unlock();
+  if (namespace_!= "")
+  {
+    RCLCPP_INFO(  // NOLINT
+      rclcpp::get_logger("ThrusterHardware"), "Setting parameters for namespace: %s", namespace_.c_str());
+    node_name_ = namespace_ + "param/set_parameters";}
+  else{
+    node_name_ = "mavros/param/set_parameters";
+  }
 
-  set_params_client_ = node_->create_client<rcl_interfaces::srv::SetParameters>("mavros/param/set_parameters");
+  set_params_client_ = node_->create_client<rcl_interfaces::srv::SetParameters>(node_name_);
 
   using namespace std::chrono_literals;
   while (!set_params_client_->wait_for_service(1s)) {
     if (!rclcpp::ok()) {
       RCLCPP_ERROR(  // NOLINT
-        rclcpp::get_logger("ThrusterHardware"), "Interrupted while waiting for the `mavros/set_parameters` service.");
+        rclcpp::get_logger("ThrusterHardware"), "Interrupted while waiting for the `%s` service.", node_name_.c_str());
       return hardware_interface::CallbackReturn::ERROR;
     }
     RCLCPP_INFO(  // NOLINT
-      rclcpp::get_logger("ThrusterHardware"), "Waiting for the `mavros/set_parameters` service to be available...");
+      rclcpp::get_logger("ThrusterHardware"), "Waiting for the `%s` service to be available...", node_name_.c_str());
   }
-
-  RCLCPP_INFO(rclcpp::get_logger("ThrusterHardware"), "Subscribing to odometry topic");  // NOLINT
-
-  topic_based_odometry_subscriber_ = node_odom_->create_subscription<nav_msgs::msg::Odometry>(
-      "/model/bluerov2/odometry", rclcpp::SensorDataQoS(),
-      [this](const nav_msgs::msg::Odometry::SharedPtr odometer_state) { state_interface_config_.current_odom = *odometer_state; });
 
   return hardware_interface::CallbackReturn::SUCCESS;
 }
@@ -181,6 +188,27 @@ void ThrusterHardware::stop_thrusters()
     }
     rt_override_rc_pub_->unlockAndPublish();
   }
+}
+
+std::vector<std::string> ThrusterHardware::split(const std::string &str, char delimiter) {
+  std::vector<std::string> tokens;
+  std::stringstream ss(str);
+  std::string token;
+  while (std::getline(ss, token, delimiter)) {
+    tokens.push_back(token);
+  }
+  return tokens;
+}
+
+std::string ThrusterHardware::concatenate_strings(const std::vector<std::string> &vec) {
+  std::string result;
+  for (size_t i = 0; i < vec.size(); ++i) {
+    result += vec[i];
+    if (i != vec.size()-1){
+      result += "/";
+    }
+  }
+  return result;
 }
 
 hardware_interface::CallbackReturn ThrusterHardware::on_activate(const rclcpp_lifecycle::State & /*previous_state*/)
@@ -290,26 +318,7 @@ hardware_interface::CallbackReturn ThrusterHardware::on_deactivate(const rclcpp_
 std::vector<hardware_interface::StateInterface> ThrusterHardware::export_state_interfaces()
 {
   // There are no state interfaces to export
-  std::vector<hardware_interface::StateInterface> state_interfaces;
-
-  if (is_odom_state_interface_configured_ == "true")
-  {
-    state_interfaces.emplace_back("x", hardware_interface::HW_IF_POSITION, &state_interface_config_.euler_current_odom.linear.x);
-    state_interfaces.emplace_back("y", hardware_interface::HW_IF_POSITION, &state_interface_config_.euler_current_odom.linear.y);
-    state_interfaces.emplace_back("z", hardware_interface::HW_IF_POSITION, &state_interface_config_.euler_current_odom.linear.z);
-    state_interfaces.emplace_back("rx", hardware_interface::HW_IF_POSITION, &state_interface_config_.euler_current_odom.angular.x);
-    state_interfaces.emplace_back("ry", hardware_interface::HW_IF_POSITION, &state_interface_config_.euler_current_odom.angular.y);
-    state_interfaces.emplace_back("rz", hardware_interface::HW_IF_POSITION, &state_interface_config_.euler_current_odom.angular.z);
-
-    state_interfaces.emplace_back("x", hardware_interface::HW_IF_VELOCITY, &state_interface_config_.current_odom.twist.twist.linear.x);
-    state_interfaces.emplace_back("y", hardware_interface::HW_IF_VELOCITY, &state_interface_config_.current_odom.twist.twist.linear.y);
-    state_interfaces.emplace_back("z", hardware_interface::HW_IF_VELOCITY, &state_interface_config_.current_odom.twist.twist.linear.z);
-    state_interfaces.emplace_back("rx", hardware_interface::HW_IF_VELOCITY, &state_interface_config_.current_odom.twist.twist.angular.x);
-    state_interfaces.emplace_back("ry", hardware_interface::HW_IF_VELOCITY, &state_interface_config_.current_odom.twist.twist.angular.y);
-    state_interfaces.emplace_back("rz", hardware_interface::HW_IF_VELOCITY, &state_interface_config_.current_odom.twist.twist.angular.z);
-  }
-  return state_interfaces;
-
+  return std::vector<hardware_interface::StateInterface>();
 }
 
 std::vector<hardware_interface::CommandInterface> ThrusterHardware::export_command_interfaces()
@@ -324,39 +333,9 @@ std::vector<hardware_interface::CommandInterface> ThrusterHardware::export_comma
   return command_interfaces;
 }
 
-geometry_msgs::msg::Twist ThrusterHardware::euler_from_quaternion(const nav_msgs::msg::Odometry odom_with_quaternion)
-{
-
-  tf2::Quaternion const quat(
-      odom_with_quaternion.pose.pose.orientation.x,
-      odom_with_quaternion.pose.pose.orientation.y,
-      odom_with_quaternion.pose.pose.orientation.z,
-      odom_with_quaternion.pose.pose.orientation.w);
-
-  geometry_msgs::msg::Twist euler;
-
-  euler.linear.x = odom_with_quaternion.pose.pose.position.x;
-  euler.linear.y = odom_with_quaternion.pose.pose.position.y;
-  euler.linear.z = odom_with_quaternion.pose.pose.position.z;
-
-  tf2::Matrix3x3 const rotation_mat(quat);
-  rotation_mat.getRPY(euler.angular.x , euler.angular.y, euler.angular.z );
-
-  return euler;
-}
-
 hardware_interface::return_type ThrusterHardware::read(
   const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/)
 {
-  if (rclcpp::ok())
-  {
-    if (is_odom_state_interface_configured_ == "true")
-    {
-      rclcpp::spin_some(node_odom_);
-      state_interface_config_.euler_current_odom = euler_from_quaternion(state_interface_config_.current_odom);
-    }
-  }
-
   return hardware_interface::return_type::OK;
 }
 
