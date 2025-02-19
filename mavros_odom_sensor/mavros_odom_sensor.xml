@@ -1,11 +1,10 @@
+<!-- mavros_odom_sensor.xml -->
 <library path="mavros_odom_sensor">
-
   <class name="mavros_odom_sensor/MavrosOdomSensor"
-    type="mavros_odom_sensor::MavrosOdomSensor"
-    base_class_type="hardware_interface::SystemInterface">
+         type="mavros_odom_sensor::MavrosOdomSensor"
+         base_class_type="hardware_interface::SensorInterface">
     <description>
-      TODO: Describe the class here
+      Sensor plugin to create state interfaces from mavros odom topic.
     </description>
   </class>
-
 </library>
