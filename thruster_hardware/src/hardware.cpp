@@ -70,7 +70,7 @@ hardware_interface::CallbackReturn ThrusterHardware::on_init(const hardware_inte
   max_retries_ = std::stoi(info_.hardware_parameters.at("max_set_param_attempts"));
   namespace_ = info_.hardware_parameters.at("namespace");
   if (namespace_ != "") {
-    namespace_ = "/" + namespace_ ;
+    namespace_ = "/" + namespace_;
   }
 
   // Store the thruster configurations
@@ -106,15 +106,12 @@ hardware_interface::CallbackReturn ThrusterHardware::on_init(const hardware_inte
 
   // Construct a node to use for interacting with MAVROS
   rclcpp::NodeOptions options;
-  if (namespace_ != "")
-  {
+  if (namespace_ != "") {
     std::string node_name_ = namespace_ + "thruster_hardware" + "/" + info_.name;
     std::vector<std::string> node_name_vec_ = split(node_name_, '/');
     std::string ns_ = concatenate_strings(std::vector<std::string>(node_name_vec_.begin(), node_name_vec_.end() - 1));
-    options.arguments({"--ros-args", "-r","__ns:=" + ns_, "-r", "__node:=" + node_name_vec_.back()});
-  }
-  else
-  {
+    options.arguments({"--ros-args", "-r", "__ns:=" + ns_, "-r", "__node:=" + node_name_vec_.back()});
+  } else {
     options.arguments({"--ros-args", "-r", "__node:=thruster_hardware" + info_.name});
   }
   node_ = rclcpp::Node::make_shared("_", options);
@@ -131,17 +128,13 @@ hardware_interface::CallbackReturn ThrusterHardware::on_configure(const rclcpp_l
     rclcpp::get_logger("ThrusterHardware"), "Configuring the ThrusterHardware system interface.");
 
   std::string node_name_;
-  if (namespace_ != "")
-  {
+  if (namespace_ != "") {
     node_name_ = namespace_ + "rc/override";
-  }
-  else
-  {
+  } else {
     node_name_ = "mavros/rc/override";
   }
 
-  override_rc_pub_ =
-    node_->create_publisher<mavros_msgs::msg::OverrideRCIn>(node_name_, rclcpp::SystemDefaultsQoS());
+  override_rc_pub_ = node_->create_publisher<mavros_msgs::msg::OverrideRCIn>(node_name_, rclcpp::SystemDefaultsQoS());
   rt_override_rc_pub_ =
     std::make_unique<realtime_tools::RealtimePublisher<mavros_msgs::msg::OverrideRCIn>>(override_rc_pub_);
 
@@ -150,12 +143,11 @@ hardware_interface::CallbackReturn ThrusterHardware::on_configure(const rclcpp_l
     channel = mavros_msgs::msg::OverrideRCIn::CHAN_NOCHANGE;
   }
   rt_override_rc_pub_->unlock();
-  if (namespace_!= "")
-  {
+  if (namespace_ != "") {
     RCLCPP_INFO(  // NOLINT
       rclcpp::get_logger("ThrusterHardware"), "Setting parameters for namespace: %s", namespace_.c_str());
-    node_name_ = namespace_ + "param/set_parameters";}
-  else{
+    node_name_ = namespace_ + "param/set_parameters";
+  } else {
     node_name_ = "mavros/param/set_parameters";
   }
 
@@ -190,7 +182,8 @@ void ThrusterHardware::stop_thrusters()
   }
 }
 
-std::vector<std::string> ThrusterHardware::split(const std::string &str, char delimiter) {
+std::vector<std::string> ThrusterHardware::split(const std::string & str, char delimiter)
+{
   std::vector<std::string> tokens;
   std::stringstream ss(str);
   std::string token;
@@ -200,11 +193,12 @@ std::vector<std::string> ThrusterHardware::split(const std::string &str, char de
   return tokens;
 }
 
-std::string ThrusterHardware::concatenate_strings(const std::vector<std::string> &vec) {
+std::string ThrusterHardware::concatenate_strings(const std::vector<std::string> & vec)
+{
   std::string result;
   for (size_t i = 0; i < vec.size(); ++i) {
     result += vec[i];
-    if (i != vec.size()-1){
+    if (i != vec.size() - 1) {
       result += "/";
     }
   }

@@ -80,8 +80,8 @@ protected:
   };
 
   void stop_thrusters();
-  std::vector<std::string> split(const std::string &string_val, char delimiter);
-  std::string concatenate_strings(const std::vector<std::string> &vec);
+  std::vector<std::string> split(const std::string & string_val, char delimiter);
+  std::string concatenate_strings(const std::vector<std::string> & vec);
 
   // We need a node to interact with MAVROS
   std::shared_ptr<rclcpp::Node> node_;
@@ -95,7 +95,6 @@ protected:
   int max_retries_;
   std::string namespace_;
   std::vector<double> hw_commands_pwm_;
-
 };
 
 }  // namespace thruster_hardware

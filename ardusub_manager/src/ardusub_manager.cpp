@@ -148,9 +148,8 @@ CallbackReturn ArduSubManager::on_configure(const rclcpp_lifecycle::State & /*pr
       topic_name_ = "/" + prefix_ + "global_position/set_gp_origin";
     }
 
-    RCLCPP_INFO(this->get_logger(), "Setting the EKF origin prefex for topic_name: %s", topic_name_.c_str());  // NOLINT
-    ekf_origin_pub_ =
-      this->create_publisher<geographic_msgs::msg::GeoPointStamped>(topic_name_, qos);
+    RCLCPP_INFO(this->get_logger(), "Setting the EKF origin prefix for topic_name: %s", topic_name_.c_str());  // NOLINT
+    ekf_origin_pub_ = this->create_publisher<geographic_msgs::msg::GeoPointStamped>(topic_name_, qos);
 
     // Periodically publish the EKF origin
     set_ekf_origin_timer_ = this->create_wall_timer(20s, [this]() -> void {
