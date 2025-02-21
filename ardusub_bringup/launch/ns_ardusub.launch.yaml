@@ -25,10 +25,6 @@ launch:
       default: ""
 
   - arg:
-      name: gazebo_world_file
-      default: ""
-
-  - arg:
       name: ardusub_params_file
       default: ""
 
@@ -39,6 +35,32 @@ launch:
   - arg:
       name: joy_file
       default: $(find-pkg-share ardusub_teleop)/config/joy_teleop.yaml
+
+  - arg:
+      name: sitl_file
+      default: $(find-pkg-share ardusub_bringup)/launch/sitl_multi_robot.launch.yaml
+
+  # Arguments for ardusub instance
+  - arg:
+      name: ardusub_instance
+      default: "0"
+
+  - arg:
+      name: sysid_thismav
+      default: "1"
+
+  # ros_gz_sim robot pose
+  - arg:
+      name: rob_x
+      default: "0.0"
+
+  - arg:
+      name: rob_y
+      default: "0.0"
+
+  - arg:
+      name: rob_z
+      default: "0.0"
 
   # Nodes
   - node:
@@ -51,17 +73,25 @@ launch:
 
   # Includes
   - include:
-      file: $(find-pkg-share ardusub_bringup)/launch/sitl.launch.yaml
+      file: $(var sitl_file)
       if: $(var use_sim)
       arg:
         - name: model_name
           value: $(var model_name)
-        - name: gazebo_world_file
-          value: $(var gazebo_world_file)
         - name: ardusub_params_file
           value: $(var ardusub_params_file)
         - name: prefix
           value: $(var prefix)
+        - name: ardusub_instance
+          value: $(var ardusub_instance)
+        - name: sysid_thismav
+          value: $(var sysid_thismav)
+        - name: rob_x
+          value: $(var rob_x)
+        - name: rob_y
+          value: $(var rob_y)
+        - name: rob_z
+          value: $(var rob_z)
 
   - include:
       file: $(find-pkg-share ardusub_manager)/launch/ardusub_manager.launch.py

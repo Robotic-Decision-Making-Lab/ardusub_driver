@@ -10,6 +10,10 @@ launch:
   - arg:
       name: ardusub_params_file
 
+  - arg:
+      name: prefix
+      default: ""
+
   # Nodes
   - node:
       pkg: ros_gz_bridge
@@ -19,17 +23,17 @@ launch:
   - node:
       pkg: ros_gz_bridge
       exec: parameter_bridge
-      args: /camera/image_raw@sensor_msgs/msg/Image[gz.msgs.Image
+      args: /$(var prefix)camera/image_raw@sensor_msgs/msg/Image[gz.msgs.Image
 
   - node:
       pkg: ros_gz_bridge
       exec: parameter_bridge
-      args: /model/$(var model_name)/odometry@nav_msgs/msg/Odometry[gz.msgs.Odometry
+      args: /model/$(var prefix)$(var model_name)/odometry@nav_msgs/msg/Odometry[gz.msgs.Odometry
 
   - node:
       pkg: ros_gz_sim
       exec: create
-      args: -name $(var model_name) -topic robot_description
+      args: -name $(var prefix)$(var model_name) -topic robot_description
 
   # Processes
   - executable:

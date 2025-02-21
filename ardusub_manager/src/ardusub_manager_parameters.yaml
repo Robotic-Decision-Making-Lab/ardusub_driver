@@ -45,3 +45,9 @@ ardusub_manager:
     description: "Whether or not to publish the TF frames for the vehicle. This feature 'technically' exists in MAVROS, but doesn't work properly.",
     read_only: true
   }
+  prefix: {
+    type: string,
+    default_value: "",
+    description: "The prefix for the MAVROS.",
+    read_only: true
+  }

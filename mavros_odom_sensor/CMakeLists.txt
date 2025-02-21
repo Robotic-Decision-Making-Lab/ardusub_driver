@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(thruster_hardware)
+project(mavros_odom_sensor)
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "(GNU|Clang)")
   add_compile_options(-Wall -Wextra -Wpedantic)
@@ -7,13 +7,11 @@ endif()
 
 set(THIS_PACKAGE_INCLUDE_DEPENDS
   rclcpp
-  rclcpp_lifecycle
   pluginlib
   hardware_interface
+  nav_msgs
   mavros_msgs
-  rcl_interfaces
-  rclcpp_lifecycle
-  realtime_tools
+  tf2
 )
 
 find_package(ament_cmake REQUIRED)
@@ -21,32 +19,36 @@ foreach(Dependency IN ITEMS ${THIS_PACKAGE_INCLUDE_DEPENDS})
   find_package(${Dependency} REQUIRED)
 endforeach()
 
-add_library(thruster_hardware SHARED
-  src/hardware.cpp
+add_library(
+  ${PROJECT_NAME}
+  SHARED
+  src/mavros_odom_sensor.cpp
 )
 
-target_include_directories(thruster_hardware
+target_include_directories(
+  ${PROJECT_NAME}
   PUBLIC
-    $<INSTALL_INTERFACE:include/thruster_hardware>
+    $<INSTALL_INTERFACE:include/mavros_odom_sensor>
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
     ${EIGEN3_INCLUDE_DIR}
   PRIVATE
     ${PROJECT_SOURCE_DIR}/src
 )
-target_compile_features(thruster_hardware PUBLIC cxx_std_17)
-target_link_libraries(thruster_hardware
+
+target_compile_features(mavros_odom_sensor PUBLIC cxx_std_17)
+target_link_libraries(mavros_odom_sensor
   PUBLIC
     ${rclcpp_LIBRARIES}
 )
 
 # Use dllexport instead of dllimport
-target_compile_definitions(thruster_hardware PRIVATE "THRUSTER_HARDWARE_BUILDING_DLL")
-ament_target_dependencies(thruster_hardware
+target_compile_definitions(mavros_odom_sensor PRIVATE "MAVROS_ODOM_SENSOR_BUILDING_DLL")
+ament_target_dependencies(mavros_odom_sensor
   PUBLIC
     ${THIS_PACKAGE_INCLUDE_DEPENDS}
 )
 
-pluginlib_export_plugin_description_file(hardware_interface thruster_hardware.xml)
+pluginlib_export_plugin_description_file(hardware_interface mavros_odom_sensor.xml)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
@@ -60,21 +62,25 @@ install(TARGETS
 
 install(
   DIRECTORY include/
-  DESTINATION include/thruster_hardware
+  DESTINATION include/mavros_odom_sensor
 )
 
 install(
   TARGETS
-    thruster_hardware
+  mavros_odom_sensor
   EXPORT
-    export_thruster_hardware
+    export_mavros_odom_sensor
   RUNTIME DESTINATION bin
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib
   INCLUDES DESTINATION include
 )
 
-ament_export_targets(export_thruster_hardware HAS_LIBRARY_TARGET)
+# install(
+#   DIRECTORY launch
+#   DESTINATION share/${PROJECT_NAME}
+# )
+ament_export_targets(export_mavros_odom_sensor HAS_LIBRARY_TARGET)
 ament_export_dependencies(${THIS_PACKAGE_INCLUDE_DEPENDS})
 
 ament_package()
