@@ -67,6 +67,7 @@ private:
   std::shared_ptr<rclcpp::Publisher<geographic_msgs::msg::GeoPointStamped>> ekf_origin_pub_;
   std::shared_ptr<rclcpp::TimerBase> set_ekf_origin_timer_;
 
+  std::string prefix_{""};
   std::shared_ptr<rclcpp::Client<mavros_msgs::srv::MessageInterval>> set_message_intervals_client_;
   std::shared_ptr<rclcpp::CallbackGroup> set_intervals_callback_group_;
   std::shared_ptr<rclcpp::TimerBase> set_intervals_timer_;

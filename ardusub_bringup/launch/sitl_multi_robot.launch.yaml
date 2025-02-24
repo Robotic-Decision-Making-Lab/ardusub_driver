@@ -1,0 +1,52 @@
+launch:
+
+  # Arguments
+  - arg:
+      name: model_name
+
+  - arg:
+      name: ardusub_params_file
+
+  - arg:
+      name: prefix
+      default: ""
+
+  # Nodes
+  - node:
+      pkg: ros_gz_bridge
+      exec: parameter_bridge
+      args: /$(var prefix)camera/image_raw@sensor_msgs/msg/Image[gz.msgs.Image
+
+  - node:
+      pkg: ros_gz_bridge
+      exec: parameter_bridge
+      args: /model/$(var prefix)$(var model_name)/odometry@nav_msgs/msg/Odometry[gz.msgs.Odometry
+
+  - arg:
+      name: init_rob_x
+      default: "0.0"
+
+  - arg:
+      name: init_rob_y
+      default: "0.0"
+
+  - arg:
+      name: init_rob_z
+      default: "0.0"
+
+  - node:
+      pkg: ros_gz_sim
+      exec: create
+      args: -name $(var prefix)$(var model_name) -topic robot_description -x $(var init_rob_x) -y $(var init_rob_y) -z $(var init_rob_z)
+
+  - arg:
+      name: ardusub_instance
+      default: "0"
+
+  - arg:
+      name: sysid_thismav
+      default: "1"
+
+  # Processes
+  - executable:
+      cmd: ardusub -S -w -M JSON --defaults $(var ardusub_params_file) -I$(var ardusub_instance) --sysid $(var sysid_thismav) --home 44.65870,-124.06556,0.0,270.0
