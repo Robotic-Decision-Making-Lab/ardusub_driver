@@ -76,10 +76,6 @@ install(
   INCLUDES DESTINATION include
 )
 
-# install(
-#   DIRECTORY launch
-#   DESTINATION share/${PROJECT_NAME}
-# )
 ament_export_targets(export_mavros_odom_sensor HAS_LIBRARY_TARGET)
 ament_export_dependencies(${THIS_PACKAGE_INCLUDE_DEPENDS})
 

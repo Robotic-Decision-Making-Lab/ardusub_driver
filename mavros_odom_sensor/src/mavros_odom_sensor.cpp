@@ -58,7 +58,7 @@ hardware_interface::CallbackReturn MavrosOdomSensor::on_configure(const rclcpp_l
     rclcpp::get_logger("MavrosOdomSensor"), "Configuring the MavrosOdomSensor sensor interface.");
 
   mavros_odometry_topic_ = info_.hardware_parameters.at("mavros_odom_topic");
-  RCLCPP_INFO(
+  RCLCPP_DEBUG(
     rclcpp::get_logger("MavrosOdomSensor"), "Subscribing to odometry topic: %s",
     mavros_odometry_topic_.c_str());  // NOLINT
 

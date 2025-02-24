@@ -20,6 +20,7 @@
 
 #ifndef MAVROS_ODOM_SENSOR_HPP_
 #define MAVROS_ODOM_SENSOR_HPP_
+// #pragma once
 
 #include <memory>
 #include <vector>
@@ -45,7 +46,7 @@ namespace mavros_odom_sensor
 class MavrosOdomSensor : public hardware_interface::SensorInterface
 {
 public:
-  RCLCPP_SHARED_PTR_DEFINITIONS(MavrosOdomSensor)  // Remove semicolon, it's included in the macro
+  RCLCPP_SHARED_PTR_DEFINITIONS(MavrosOdomSensor)
   hardware_interface::CallbackReturn on_init(const hardware_interface::HardwareInfo & info) override;
 
   hardware_interface::CallbackReturn on_configure(const rclcpp_lifecycle::State & previous_state) override;
