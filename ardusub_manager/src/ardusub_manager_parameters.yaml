@@ -48,6 +48,6 @@ ardusub_manager:
   prefix: {
     type: string,
     default_value: "",
-    description: "The prefix for the MAVROS.",
+    description: "The MAVROS prefix.",
     read_only: true
   }

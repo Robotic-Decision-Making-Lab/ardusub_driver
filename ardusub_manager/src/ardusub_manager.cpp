@@ -124,13 +124,13 @@ CallbackReturn ArduSubManager::on_configure(const rclcpp_lifecycle::State & /*pr
       return CallbackReturn::ERROR;
     }
 
-    std::string topic_name_ = "/mavros/set_message_interval";
+    std::string msg_interval_topic_name_ = "/mavros/set_message_interval";
     if (!prefix_.empty()) {
-      topic_name_ = "/" + prefix_ + "set_message_interval";
+      msg_interval_topic_name_ = "/" + prefix_ + "set_message_interval";
     }
 
     set_message_intervals_client_ = this->create_client<mavros_msgs::srv::MessageInterval>(
-      topic_name_, rclcpp::SystemDefaultsQoS(), set_intervals_callback_group_);
+      msg_interval_topic_name_, rclcpp::SystemDefaultsQoS(), set_intervals_callback_group_);
 
     set_intervals_timer_ = this->create_wall_timer(
       20s, [this]() -> void { set_message_rates(params_.message_intervals.ids, params_.message_intervals.rates); });
@@ -143,13 +143,14 @@ CallbackReturn ArduSubManager::on_configure(const rclcpp_lifecycle::State & /*pr
     // Setup the publisher for the EKF origin
     auto qos = rclcpp::QoS(rclcpp::KeepLast(10)).transient_local().reliable();
 
-    std::string topic_name_ = "/mavros/global_position/set_gp_origin";
+    std::string gp_origin_topic_name_ = "/mavros/global_position/set_gp_origin";
     if (!prefix_.empty()) {
-      topic_name_ = "/" + prefix_ + "global_position/set_gp_origin";
+      gp_origin_topic_name_ = "/" + prefix_ + "global_position/set_gp_origin";
     }
 
-    RCLCPP_INFO(this->get_logger(), "Setting the EKF origin prefix for topic_name: %s", topic_name_.c_str());  // NOLINT
-    ekf_origin_pub_ = this->create_publisher<geographic_msgs::msg::GeoPointStamped>(topic_name_, qos);
+    RCLCPP_INFO(
+      this->get_logger(), "Setting the EKF origin prefix for topic_name: %s", gp_origin_topic_name_.c_str());  // NOLINT
+    ekf_origin_pub_ = this->create_publisher<geographic_msgs::msg::GeoPointStamped>(gp_origin_topic_name_, qos);
 
     // Periodically publish the EKF origin
     set_ekf_origin_timer_ = this->create_wall_timer(20s, [this]() -> void {
@@ -171,20 +172,19 @@ CallbackReturn ArduSubManager::on_configure(const rclcpp_lifecycle::State & /*pr
   if (params_.publish_tf) {
     tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
 
-    std::string topic_name_ = "/mavros/local_position/pose";
+    std::string pose_topic_name_ = "/mavros/local_position/pose";
     if (!prefix_.empty()) {
-      topic_name_ = "/" + prefix_ + "local_position/pose";
+      pose_topic_name_ = "/" + prefix_ + "local_position/pose";
     }
     pose_sub_ = this->create_subscription<geometry_msgs::msg::PoseStamped>(
-      topic_name_, rclcpp::SensorDataQoS(),
+      pose_topic_name_, rclcpp::SensorDataQoS(),
       [this](const geometry_msgs::msg::PoseStamped::SharedPtr msg) {  // NOLINT
         geometry_msgs::msg::TransformStamped transform;
 
         transform.header.stamp = msg->header.stamp;
         transform.header.frame_id = "map";
 
-        // TODO: Make this configurable to namespaces
-        transform.child_frame_id = "base_link";
+        transform.child_frame_id = prefix_ + "base_link";
 
         transform.transform.translation.x = msg->pose.position.x;
         transform.transform.translation.y = msg->pose.position.y;

@@ -108,7 +108,7 @@ hardware_interface::CallbackReturn ThrusterHardware::on_init(const hardware_inte
   rclcpp::NodeOptions options;
   if (namespace_ != "") {
     std::string node_name_ = namespace_ + "thruster_hardware" + "/" + info_.name;
-    std::vector<std::string> node_name_vec_ = split(node_name_, '/');
+    std::vector<std::string> c = split(node_name_, '/');
     std::string ns_ = concatenate_strings(std::vector<std::string>(node_name_vec_.begin(), node_name_vec_.end() - 1));
     options.arguments({"--ros-args", "-r", "__ns:=" + ns_, "-r", "__node:=" + node_name_vec_.back()});
   } else {

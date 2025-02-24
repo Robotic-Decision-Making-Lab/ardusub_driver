@@ -23,21 +23,21 @@ launch:
       args: /model/$(var prefix)$(var model_name)/odometry@nav_msgs/msg/Odometry[gz.msgs.Odometry
 
   - arg:
-      name: rob_x
+      name: init_rob_x
       default: "0.0"
 
   - arg:
-      name: rob_y
+      name: init_rob_y
       default: "0.0"
 
   - arg:
-      name: rob_z
+      name: init_rob_z
       default: "0.0"
 
   - node:
       pkg: ros_gz_sim
       exec: create
-      args: -name $(var prefix)$(var model_name) -topic robot_description -x $(var rob_x) -y $(var rob_y) -z $(var rob_z)
+      args: -name $(var prefix)$(var model_name) -topic robot_description -x $(var init_rob_x) -y $(var init_rob_y) -z $(var init_rob_z)
 
   - arg:
       name: ardusub_instance
