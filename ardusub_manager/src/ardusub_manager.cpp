@@ -18,7 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include "ardusub_manager/ardusub_manager.hpp"
+#include "ardusub_manager.hpp"
 
 #include <chrono>
 #include <ranges>

@@ -14,16 +14,8 @@ foreach(Dependency IN ITEMS ${THIS_PACKAGE_INCLUDE_DEPENDS})
     find_package(${Dependency} REQUIRED)
 endforeach()
 
-add_library(joy_interface)
-target_sources(
-    joy_interface
-    PRIVATE src/joy_interface.cpp
-    PUBLIC
-        FILE_SET HEADERS
-        BASE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/include
-        FILES
-            ${CMAKE_CURRENT_SOURCE_DIR}/include/ardusub_teleop/joy_interface.hpp
-)
+add_executable(joy_interface)
+target_sources(joy_interface PRIVATE src/joy_interface.cpp)
 
 ament_target_dependencies(joy_interface PUBLIC ${THIS_PACKAGE_INCLUDE_DEPENDS})
 target_compile_features(joy_interface PUBLIC cxx_std_23)
@@ -31,8 +23,7 @@ target_link_libraries(joy_interface PUBLIC)
 
 install(
     TARGETS joy_interface
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    FILE_SET HEADERS
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 install(DIRECTORY config launch DESTINATION share/ardusub_teleop)
 

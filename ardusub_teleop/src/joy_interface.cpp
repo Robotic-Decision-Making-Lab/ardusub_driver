@@ -18,7 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include "ardusub_teleop/joy_interface.hpp"
+#include "joy_interface.hpp"
 
 namespace ardusub_teleop
 {
