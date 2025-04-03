@@ -18,9 +18,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include "ardusub_manager.hpp"
+#include "ardusub_manager/ardusub_manager.hpp"
 
 #include <chrono>
+#include <ranges>
 
 #include "geometry_msgs/msg/transform_stamped.hpp"
 
@@ -30,14 +31,11 @@ namespace ardusub_manager
 namespace
 {
 
-/**
- * @brief Wait for a future to be ready or for a timeout to occur
- *
- * @note This has been retrieved from the following source:
- * https://github.com/ros2/demos/blob/619c4bc2c9b49fa2073ed19597fc42e882324b2f/lifecycle/src/lifecycle_service_client.cpp#L46
- */
+/// Wait for a future to be ready or for a timeout to occur
+/// This has been retrieved from the following source:
+/// https://github.com/ros2/demos/blob/619c4bc2c9b49fa2073ed19597fc42e882324b2f/lifecycle/src/lifecycle_service_client.cpp#L46
 template <typename T>
-std::future_status wait_for_result(T & future, std::chrono::seconds timeout)
+auto wait_for_result(T & future, std::chrono::seconds timeout) -> std::future_status
 {
   auto end_t = std::chrono::steady_clock::now() + timeout;
   const std::chrono::milliseconds wait_time(100);
@@ -66,7 +64,7 @@ ArduSubManager::ArduSubManager()  // NOLINT
 {
 }
 
-void ArduSubManager::set_message_rate(int64_t msg_id, double rate) const
+auto ArduSubManager::set_message_rate(int64_t msg_id, double rate) const -> void
 {
   auto request = std::make_shared<mavros_msgs::srv::MessageInterval::Request>();
   request->message_id = msg_id;
@@ -79,7 +77,9 @@ void ArduSubManager::set_message_rate(int64_t msg_id, double rate) const
 
   if (future_status != std::future_status::ready) {
     RCLCPP_ERROR(  // NOLINT
-      this->get_logger(), "A timeout occurred while attempting to set the message interval for message ID %ld", msg_id);
+      this->get_logger(),
+      "A timeout occurred while attempting to set the message interval for message ID %ld",
+      msg_id);
   }
 
   if (!future_result.get()->success) {
@@ -89,27 +89,19 @@ void ArduSubManager::set_message_rate(int64_t msg_id, double rate) const
   RCLCPP_DEBUG(this->get_logger(), "Message %ld set to publish at a rate of %f hz", msg_id, rate);  // NOLINT
 }
 
-void ArduSubManager::set_message_rates(const std::vector<int64_t> & msg_ids, const std::vector<double> & rates) const
+auto ArduSubManager::set_message_rates(const std::vector<int64_t> & msg_ids, const std::vector<double> & rates) const
+  -> void
 {
-  for (size_t i = 0; i < msg_ids.size(); ++i) {
-    set_message_rate(msg_ids[i], rates[i]);
+  for (const auto [msg_id, rate] : std::views::zip(msg_ids, rates)) {
+    set_message_rate(msg_id, rate);
   }
 }
 
-CallbackReturn ArduSubManager::on_configure(const rclcpp_lifecycle::State & /*previous_state*/)
+auto ArduSubManager::on_configure(const rclcpp_lifecycle::State & /*previous_state*/) -> CallbackReturn
 {
   RCLCPP_INFO(this->get_logger(), "Configuring the ArduSub manager...");  // NOLINT
-
-  try {
-    param_listener_ = std::make_shared<ardusub_manager::ParamListener>(this->get_node_parameters_interface());
-    params_ = param_listener_->get_params();
-  }
-  catch (const std::exception & e) {
-    RCLCPP_ERROR(  // NOLINT
-      this->get_logger(), "An exception occurred while initializing the ArduSub manager: %s\n", e.what());
-    return CallbackReturn::ERROR;
-  }
-
+  param_listener_ = std::make_shared<ardusub_manager::ParamListener>(this->get_node_parameters_interface());
+  params_ = param_listener_->get_params();
   set_ekf_origin_ = params_.set_ekf_origin;
 
   using namespace std::chrono_literals;
@@ -119,7 +111,8 @@ CallbackReturn ArduSubManager::on_configure(const rclcpp_lifecycle::State & /*pr
 
   if (!params_.message_intervals.ids.empty()) {
     if (params_.message_intervals.rates.size() != params_.message_intervals.ids.size()) {
-      fprintf(stderr, "The number of message IDs does not match the number of message rates\n");
+      // NOLINTNEXTLINE
+      RCLCPP_ERROR(this->get_logger(), "The number of message IDs does not match the number of message rates");
       return CallbackReturn::ERROR;
     }
 
@@ -160,7 +153,8 @@ CallbackReturn ArduSubManager::on_configure(const rclcpp_lifecycle::State & /*pr
     tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
 
     pose_sub_ = this->create_subscription<geometry_msgs::msg::PoseStamped>(
-      "/mavros/local_position/pose", rclcpp::SensorDataQoS(),
+      "/mavros/local_position/pose",
+      rclcpp::SensorDataQoS(),
       [this](const geometry_msgs::msg::PoseStamped::SharedPtr msg) {  // NOLINT
         geometry_msgs::msg::TransformStamped transform;
 
@@ -182,7 +176,7 @@ CallbackReturn ArduSubManager::on_configure(const rclcpp_lifecycle::State & /*pr
   return CallbackReturn::SUCCESS;
 }
 
-CallbackReturn ArduSubManager::on_activate(const rclcpp_lifecycle::State & /*previous_state*/)
+auto ArduSubManager::on_activate(const rclcpp_lifecycle::State & /*previous_state*/) -> CallbackReturn
 {
   RCLCPP_INFO(this->get_logger(), "Activating the ArduSub manager...");  // NOLINT
 
@@ -198,7 +192,8 @@ CallbackReturn ArduSubManager::on_activate(const rclcpp_lifecycle::State & /*pre
     while (!set_message_intervals_client_->wait_for_service(1s)) {
       if (!rclcpp::ok()) {
         RCLCPP_INFO(  // NOLINT
-          this->get_logger(), "Interrupted while waiting for the message interval service to exist");
+          this->get_logger(),
+          "Interrupted while waiting for the message interval service to exist");
         return CallbackReturn::ERROR;
       }
       RCLCPP_INFO(this->get_logger(), "Waiting for the message interval service to exist...");  // NOLINT
@@ -212,29 +207,17 @@ CallbackReturn ArduSubManager::on_activate(const rclcpp_lifecycle::State & /*pre
   return CallbackReturn::SUCCESS;
 }
 
-CallbackReturn ArduSubManager::on_deactivate(const rclcpp_lifecycle::State & /*previous_state*/)
+auto ArduSubManager::on_deactivate(const rclcpp_lifecycle::State & /*previous_state*/) -> CallbackReturn
 {
   RCLCPP_INFO(this->get_logger(), "Deactivating the ArduSub manager...");  // NOLINT
-
   set_intervals_timer_->cancel();
   set_ekf_origin_timer_->cancel();
-
-  return CallbackReturn::SUCCESS;
-}
-
-CallbackReturn ArduSubManager::on_cleanup(const rclcpp_lifecycle::State & /*previous_state*/)
-{
-  return CallbackReturn::SUCCESS;
-}
-
-CallbackReturn ArduSubManager::on_shutdown(const rclcpp_lifecycle::State & /*previous_state*/)
-{
   return CallbackReturn::SUCCESS;
 }
 
 }  // namespace ardusub_manager
 
-int main(int argc, char * argv[])
+auto main(int argc, char * argv[]) -> int
 {
   rclcpp::init(argc, argv);
 
@@ -242,7 +225,6 @@ int main(int argc, char * argv[])
 
   auto node = std::make_shared<ardusub_manager::ArduSubManager>();
   executor.add_node(node->get_node_base_interface());
-
   executor.spin();
 
   rclcpp::shutdown();

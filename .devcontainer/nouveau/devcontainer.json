@@ -1,10 +1,13 @@
 {
-  "name": "ROS 2 Dev Container",
-  "dockerFile": "Dockerfile",
+  "name": "Dev Container",
+  "dockerFile": "../Dockerfile",
   "context": "../..",
+  "build": {
+    "target": "desktop"
+  },
   "workspaceMount": "source=${localWorkspaceFolder},target=/home/ros/ws_ros/src/ardusub_driver,type=bind",
   "workspaceFolder": "/home/ros/ws_ros/src/ardusub_driver",
-  "remoteUser": "ros",
+  "remoteUser": "ubuntu",
   "runArgs": [
     "--network=host",
     "--cap-add=SYS_PTRACE",
@@ -24,13 +27,17 @@
     "vscode": {
       "extensions": [
         "ms-azuretools.vscode-docker",
+        "ms-python.python",
+        "njpwerner.autodocstring",
         "ms-vscode.cpptools",
         "redhat.vscode-xml",
         "redhat.vscode-yaml",
         "smilerobotics.urdf",
         "DavidAnson.vscode-markdownlint",
         "esbenp.prettier-vscode",
-        "xaver.clang-format"
+        "xaver.clang-format",
+        "charliermarsh.ruff",
+        "ms-vscode.cmake-tools"
       ]
     }
   }

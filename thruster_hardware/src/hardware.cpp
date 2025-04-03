@@ -41,21 +41,28 @@ hardware_interface::CallbackReturn ThrusterHardware::on_init(const hardware_inte
   for (const auto & joint : info_.joints) {
     if (joint.command_interfaces.size() != 1) {
       RCLCPP_ERROR(  // NOLINT
-        rclcpp::get_logger("ThrusterHardware"), "Joint '%s' has %ld command interfaces. 1 expected.",
-        joint.name.c_str(), joint.command_interfaces.size());
+        rclcpp::get_logger("ThrusterHardware"),
+        "Joint '%s' has %ld command interfaces. 1 expected.",
+        joint.name.c_str(),
+        joint.command_interfaces.size());
       return hardware_interface::CallbackReturn::ERROR;
     }
 
     if (joint.command_interfaces[0].name != "pwm") {
       RCLCPP_ERROR(  // NOLINT
-        rclcpp::get_logger("ThrusterHardware"), "Joint '%s' has command interface '%s'. '%s' expected.",
-        joint.name.c_str(), joint.command_interfaces[0].name.c_str(), "pwm");
+        rclcpp::get_logger("ThrusterHardware"),
+        "Joint '%s' has command interface '%s'. '%s' expected.",
+        joint.name.c_str(),
+        joint.command_interfaces[0].name.c_str(),
+        "pwm");
       return hardware_interface::CallbackReturn::ERROR;
     }
 
     if (!joint.state_interfaces.empty()) {
       RCLCPP_ERROR(  // NOLINT
-        rclcpp::get_logger("ThrusterHardware"), "Joint '%s' has %ld state interfaces. 0 expected.", joint.name.c_str(),
+        rclcpp::get_logger("ThrusterHardware"),
+        "Joint '%s' has %ld state interfaces. 0 expected.",
+        joint.name.c_str(),
         joint.state_interfaces.size());
       return hardware_interface::CallbackReturn::ERROR;
     }
@@ -64,7 +71,8 @@ hardware_interface::CallbackReturn ThrusterHardware::on_init(const hardware_inte
   // Get the maximum number of attempts that can be made to set the thruster parameters before failing
   if (info_.hardware_parameters.find("max_set_param_attempts") == info_.hardware_parameters.cend()) {
     RCLCPP_ERROR(  // NOLINT
-      rclcpp::get_logger("ThrusterHardware"), "The 'max_set_param_attempts' parameter is required.");
+      rclcpp::get_logger("ThrusterHardware"),
+      "The 'max_set_param_attempts' parameter is required.");
     return hardware_interface::CallbackReturn::ERROR;
   }
   max_retries_ = std::stoi(info_.hardware_parameters.at("max_set_param_attempts"));
@@ -106,7 +114,8 @@ hardware_interface::CallbackReturn ThrusterHardware::on_init(const hardware_inte
   node_ = rclcpp::Node::make_shared("_", options);
 
   RCLCPP_INFO(  // NOLINT
-    rclcpp::get_logger("ThrusterHardware"), "Successfully initialized ThrusterHardware system interface!");
+    rclcpp::get_logger("ThrusterHardware"),
+    "Successfully initialized ThrusterHardware system interface!");
 
   return hardware_interface::CallbackReturn::SUCCESS;
 }
@@ -114,7 +123,8 @@ hardware_interface::CallbackReturn ThrusterHardware::on_init(const hardware_inte
 hardware_interface::CallbackReturn ThrusterHardware::on_configure(const rclcpp_lifecycle::State & /*previous_state*/)
 {
   RCLCPP_INFO(  // NOLINT
-    rclcpp::get_logger("ThrusterHardware"), "Configuring the ThrusterHardware system interface.");
+    rclcpp::get_logger("ThrusterHardware"),
+    "Configuring the ThrusterHardware system interface.");
 
   override_rc_pub_ =
     node_->create_publisher<mavros_msgs::msg::OverrideRCIn>("mavros/rc/override", rclcpp::SystemDefaultsQoS());
@@ -133,11 +143,13 @@ hardware_interface::CallbackReturn ThrusterHardware::on_configure(const rclcpp_l
   while (!set_params_client_->wait_for_service(1s)) {
     if (!rclcpp::ok()) {
       RCLCPP_ERROR(  // NOLINT
-        rclcpp::get_logger("ThrusterHardware"), "Interrupted while waiting for the `mavros/set_parameters` service.");
+        rclcpp::get_logger("ThrusterHardware"),
+        "Interrupted while waiting for the `mavros/set_parameters` service.");
       return hardware_interface::CallbackReturn::ERROR;
     }
     RCLCPP_INFO(  // NOLINT
-      rclcpp::get_logger("ThrusterHardware"), "Waiting for the `mavros/set_parameters` service to be available...");
+      rclcpp::get_logger("ThrusterHardware"),
+      "Waiting for the `mavros/set_parameters` service to be available...");
   }
 
   return hardware_interface::CallbackReturn::SUCCESS;
@@ -161,7 +173,8 @@ void ThrusterHardware::stop_thrusters()
 hardware_interface::CallbackReturn ThrusterHardware::on_activate(const rclcpp_lifecycle::State & /*previous_state*/)
 {
   RCLCPP_INFO(  // NOLINT
-    rclcpp::get_logger("ThrusterHardware"), "Activating the ThrusterHardware system interface.");
+    rclcpp::get_logger("ThrusterHardware"),
+    "Activating the ThrusterHardware system interface.");
 
   std::vector<rcl_interfaces::msg::Parameter> params;
   params.reserve(thruster_configs_.size());
@@ -179,7 +192,8 @@ hardware_interface::CallbackReturn ThrusterHardware::on_activate(const rclcpp_li
 
   for (int i = 0; i < max_retries_; ++i) {
     RCLCPP_WARN(  // NOLINT
-      rclcpp::get_logger("ThrusterHardware"), "Attempting to set thruster parameters to RC passthrough...");
+      rclcpp::get_logger("ThrusterHardware"),
+      "Attempting to set thruster parameters to RC passthrough...");
 
     auto future = set_params_client_->async_send_request(request);
 
@@ -189,13 +203,16 @@ hardware_interface::CallbackReturn ThrusterHardware::on_activate(const rclcpp_li
       for (const auto & response : responses) {
         if (!response.successful) {
           RCLCPP_ERROR(  // NOLINT
-            rclcpp::get_logger("ThrusterHardware"), "Failed to set thruster parameter '%s'.", response.reason.c_str());
+            rclcpp::get_logger("ThrusterHardware"),
+            "Failed to set thruster parameter '%s'.",
+            response.reason.c_str());
           return hardware_interface::CallbackReturn::ERROR;
         }
       }
 
       RCLCPP_INFO(  // NOLINT
-        rclcpp::get_logger("ThrusterHardware"), "Successfully set thruster parameters to RC passthrough!");
+        rclcpp::get_logger("ThrusterHardware"),
+        "Successfully set thruster parameters to RC passthrough!");
 
       // Stop the thrusters before switching to an external controller
       stop_thrusters();
@@ -241,13 +258,16 @@ hardware_interface::CallbackReturn ThrusterHardware::on_deactivate(const rclcpp_
       for (const auto & response : responses) {
         if (!response.successful) {
           RCLCPP_ERROR(  // NOLINT
-            rclcpp::get_logger("ThrusterHardware"), "Failed to set thruster parameter '%s'.", response.reason.c_str());
+            rclcpp::get_logger("ThrusterHardware"),
+            "Failed to set thruster parameter '%s'.",
+            response.reason.c_str());
           return hardware_interface::CallbackReturn::ERROR;
         }
       }
 
       RCLCPP_INFO(  // NOLINT
-        rclcpp::get_logger("ThrusterHardware"), "Successfully restored the default thruster values!");
+        rclcpp::get_logger("ThrusterHardware"),
+        "Successfully restored the default thruster values!");
 
       return hardware_interface::CallbackReturn::SUCCESS;
     }
@@ -281,13 +301,15 @@ std::vector<hardware_interface::CommandInterface> ThrusterHardware::export_comma
 }
 
 hardware_interface::return_type ThrusterHardware::read(
-  const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/)
+  const rclcpp::Time & /*time*/,
+  const rclcpp::Duration & /*period*/)
 {
   return hardware_interface::return_type::OK;
 }
 
 hardware_interface::return_type ThrusterHardware::write(
-  const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/)
+  const rclcpp::Time & /*time*/,
+  const rclcpp::Duration & /*period*/)
 {
   if (rt_override_rc_pub_ && rt_override_rc_pub_->trylock()) {
     for (size_t i = 0; i < hw_commands_pwm_.size(); ++i) {

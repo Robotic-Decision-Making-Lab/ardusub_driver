@@ -42,9 +42,10 @@ JoyInterface::JoyInterface()
   pwm_range_ = std::make_tuple(this->get_parameter("min_pwm").as_int(), this->get_parameter("max_pwm").as_int());
 
   enable_pwm_service_ = create_service<std_srvs::srv::SetBool>(
-    "~/enable_pwm_control", [this](
-                              const std::shared_ptr<std_srvs::srv::SetBool::Request> request,  // NOLINT
-                              std::shared_ptr<std_srvs::srv::SetBool::Response> response) {    // NOLINT
+    "~/enable_pwm_control",
+    [this](
+      const std::shared_ptr<std_srvs::srv::SetBool::Request> request,  // NOLINT
+      std::shared_ptr<std_srvs::srv::SetBool::Response> response) {    // NOLINT
       pwm_enabled_ = request->data;
       response->success = true;
       return;

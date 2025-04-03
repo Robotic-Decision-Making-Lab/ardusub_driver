@@ -1,47 +1,46 @@
 ardusub_manager:
-  message_intervals: {
-    ids: {
-      type: int_array,
-      default_value: [],
-      description: "The list of MAVLINK messages to request.",
+  message_intervals:
+    ids:
+      type: int_array
+      default_value: []
+      description: "The list of MAVLINK messages to request."
       read_only: true
-    },
-    rates: {
-      type: double_array,
-      default_value: [],
-      description: "The rates that each message should be published at. This should be provided in the same order as the message IDs.",
+
+    rates:
+      type: double_array
+      default_value: []
+      description: "The rates that each message should be published at. This should be provided in the same order as the message IDs."
       read_only: true
-    }
-  }
-  set_ekf_origin: {
-    type: bool,
-    default_value: false,
-    description: "Whether or not to set the EKF origin on startup.",
+
+  set_ekf_origin:
+    type: bool
+    default_value: false
+    description: "Whether or not to set the EKF origin on startup."
     read_only: true
-  }
-  ekf_origin: {
-    latitude: {
-      type: double,
-      default_value: 44.65870,
-      description: "The latitude of the EKF origin.",
+
+  ekf_origin:
+    latitude:
+      type: double
+      default_value: 44.65870
+      description: "The latitude of the EKF origin."
       read_only: true
-    },
-    longitude: {
-      type: double,
-      default_value: -124.06556,
-      description: "The longitude of the EKF origin.",
+
+    longitude:
+      type: double
+      default_value: -124.06556
+      description: "The longitude of the EKF origin."
       read_only: true
-    },
-    altitude: {
-      type: double,
-      default_value: 0.0,
-      description: "The altitude of the EKF origin.",
+
+    altitude:
+      type: double
+      default_value: 0.0
+      description: "The altitude of the EKF origin."
       read_only: true
-    }
-  }
-  publish_tf: {
-    type: bool,
-    default_value: true,
-    description: "Whether or not to publish the TF frames for the vehicle. This feature 'technically' exists in MAVROS, but doesn't work properly.",
+
+
+  publish_tf:
+    type: bool
+    default_value: true
+    description: "Whether or not to publish the TF frames for the vehicle. This feature 'technically' exists in MAVROS, but doesn't work properly."
     read_only: true
-  }
+
