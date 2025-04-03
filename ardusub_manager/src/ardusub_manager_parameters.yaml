@@ -43,4 +43,3 @@ ardusub_manager:
     default_value: true
     description: "Whether or not to publish the TF frames for the vehicle. This feature 'technically' exists in MAVROS, but doesn't work properly."
     read_only: true
-

@@ -36,7 +36,8 @@ target_sources(
     PUBLIC
         FILE_SET HEADERS
         BASE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/include
-        FILES ${CMAKE_CURRENT_SOURCE_DIR}/include/ardusub_manager/ardusub_manager.hpp
+        FILES
+            ${CMAKE_CURRENT_SOURCE_DIR}/include/ardusub_manager/ardusub_manager.hpp
 )
 
 ament_target_dependencies(
