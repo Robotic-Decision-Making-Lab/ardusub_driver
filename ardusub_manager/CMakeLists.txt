@@ -37,7 +37,7 @@ target_compile_features(ardusub_manager PUBLIC cxx_std_23)
 
 install(
     TARGETS ardusub_manager ardusub_manager_parameters
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    DESTINATION lib/ardusub_manager
 )
 
 install(DIRECTORY launch DESTINATION share/ardusub_manager)
