@@ -38,7 +38,7 @@ launch:
 
   - arg:
       name: sitl_base_port
-      default: 5760
+      default: "5760"
 
   # Nodes
   - node:
