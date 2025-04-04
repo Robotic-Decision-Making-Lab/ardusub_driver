@@ -37,7 +37,7 @@ launch:
       default: $(find-pkg-share ardusub_teleop)/config/joy_teleop.yaml
 
   - arg:
-      name: base_port
+      name: sitl_base_port
       default: 5760
 
   # Nodes
@@ -61,7 +61,7 @@ launch:
         - name: ardusub_params_file
           value: $(var ardusub_params_file)
         - name: base_port
-          value: $(var base_port)
+          value: $(var sitl_base_port)
 
   - include:
       file: $(find-pkg-share ardusub_manager)/launch/ardusub_manager.launch.py
