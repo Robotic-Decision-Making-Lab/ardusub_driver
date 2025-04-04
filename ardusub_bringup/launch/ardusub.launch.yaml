@@ -36,6 +36,10 @@ launch:
       name: joy_file
       default: $(find-pkg-share ardusub_teleop)/config/joy_teleop.yaml
 
+  - arg:
+      name: base_port
+      default: 5760
+
   # Nodes
   - node:
       pkg: mavros
@@ -56,6 +60,8 @@ launch:
           value: $(var gazebo_world_file)
         - name: ardusub_params_file
           value: $(var ardusub_params_file)
+        - name: base_port
+          value: $(var base_port)
 
   - include:
       file: $(find-pkg-share ardusub_manager)/launch/ardusub_manager.launch.py
