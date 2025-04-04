@@ -21,10 +21,7 @@ ament_target_dependencies(joy_interface PUBLIC ${THIS_PACKAGE_INCLUDE_DEPENDS})
 target_compile_features(joy_interface PUBLIC cxx_std_23)
 target_link_libraries(joy_interface PUBLIC)
 
-install(
-    TARGETS joy_interface
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-)
+install(TARGETS joy_interface DESTINATION lib/ardusub_teleop)
 install(DIRECTORY config launch DESTINATION share/ardusub_teleop)
 
 ament_package()

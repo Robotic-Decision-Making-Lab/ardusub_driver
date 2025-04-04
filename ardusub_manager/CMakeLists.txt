@@ -36,8 +36,11 @@ target_link_libraries(ardusub_manager PUBLIC ardusub_manager_parameters)
 target_compile_features(ardusub_manager PUBLIC cxx_std_23)
 
 install(
-    TARGETS ardusub_manager ardusub_manager_parameters
-    DESTINATION lib/ardusub_manager
+    TARGETS
+        ardusub_manager
+        ardusub_manager_parameters
+        DESTINATION
+        lib/ardusub_manager
 )
 
 install(DIRECTORY launch DESTINATION share/ardusub_manager)
