@@ -39,7 +39,7 @@ auto ThrusterHardware::on_init(const hardware_interface::HardwareInfo & info) ->
   const auto retries_it = info_.hardware_parameters.find("max_set_param_attempts");
   if (retries_it == info_.hardware_parameters.cend()) {
     // NOLINTNEXTLINE
-    RCLCPP_ERROR(logger_, std::format("Missing the required parameter 'max_set_param_attempts'", joint.name).c_str());
+    RCLCPP_ERROR(logger_, "Missing the required parameter 'max_set_param_attempts'");
     return hardware_interface::CallbackReturn::ERROR;
   }
   max_retries_ = std::stoi(retries_it->second);
