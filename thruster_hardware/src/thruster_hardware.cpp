@@ -36,17 +36,16 @@ auto ThrusterHardware::on_init(const hardware_interface::HardwareInfo & info) ->
     return hardware_interface::CallbackReturn::ERROR;
   }
 
-  for (const auto & joint : info_.joints) {
-    // retrieve and validate the joint parameters
-    const auto retries_it = joint.parameters.find("max_set_param_attempts");
-    if (retries_it == joint.parameters.cend()) {
-      RCLCPP_ERROR(  // NOLINT
-        logger_,
-        std::format("Joint {} is missing the required parameter 'max_set_param_attempts'", joint.name).c_str());
-      return hardware_interface::CallbackReturn::ERROR;
-    }
-    max_retries_ = std::stoi(retries_it->second);
+  const auto retries_it = info_.hardware_parameters.find("max_set_param_attempts");
+  if (retries_it == info_.hardware_parameters.cend()) {
+    // NOLINTNEXTLINE
+    RCLCPP_ERROR(logger_, std::format("Missing the required parameter 'max_set_param_attempts'", joint.name).c_str());
+    return hardware_interface::CallbackReturn::ERROR;
+  }
+  max_retries_ = std::stoi(retries_it->second);
 
+  // retrieve and validate the joint parameters
+  for (const auto & joint : info_.joints) {
     const auto channel_it = joint.parameters.find("channel");
     if (channel_it == joint.parameters.cend()) {
       // NOLINTNEXTLINE
