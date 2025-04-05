@@ -29,6 +29,8 @@ namespace thruster_hardware
 
 auto ThrusterHardware::on_init(const hardware_interface::HardwareInfo & info) -> hardware_interface::CallbackReturn
 {
+  RCLCPP_INFO(logger_, "Initializing the ThrusterHardware interface");  // NOLINT
+
   if (hardware_interface::SystemInterface::on_init(info) != hardware_interface::CallbackReturn::SUCCESS) {
     RCLCPP_ERROR(logger_, "Failed to initialize the ThrusterHardware interface");  // NOLINT
     return hardware_interface::CallbackReturn::ERROR;

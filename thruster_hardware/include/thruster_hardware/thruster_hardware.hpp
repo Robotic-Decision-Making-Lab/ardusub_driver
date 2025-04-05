@@ -55,7 +55,7 @@ class ThrusterHardware : public hardware_interface::SystemInterface
 
   auto write(const rclcpp::Time & time, const rclcpp::Duration & period) -> hardware_interface::return_type override;
 
-protected:
+private:
   struct ThrusterConfig
   {
     rcl_interfaces::msg::Parameter param;
