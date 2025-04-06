@@ -38,8 +38,7 @@ auto ThrusterHardware::on_init(const hardware_interface::HardwareInfo & info) ->
 
   const auto retries_it = info_.hardware_parameters.find("max_set_param_attempts");
   if (retries_it == info_.hardware_parameters.cend()) {
-    // NOLINTNEXTLINE
-    RCLCPP_ERROR(logger_, "Missing the required parameter 'max_set_param_attempts'");
+    RCLCPP_ERROR(logger_, "Missing the required parameter 'max_set_param_attempts'");  // NOLINT
     return hardware_interface::CallbackReturn::ERROR;
   }
   max_retries_ = std::stoi(retries_it->second);
@@ -48,44 +47,25 @@ auto ThrusterHardware::on_init(const hardware_interface::HardwareInfo & info) ->
   for (const auto & joint : info_.joints) {
     const auto channel_it = joint.parameters.find("channel");
     if (channel_it == joint.parameters.cend()) {
-      // NOLINTNEXTLINE
-      RCLCPP_ERROR(logger_, std::format("Joint {} is missing the required parameter 'channel'", joint.name).c_str());
+      RCLCPP_ERROR(logger_, "Joint %s is missing the required parameter 'channel'", joint.name.c_str());  // NOLINT
       return hardware_interface::CallbackReturn::ERROR;
     }
     const auto channel = std::stoi(channel_it->second);
-    if (channel < 1 || channel > 16) {
-      RCLCPP_ERROR(  // NOLINT
-        logger_,
-        std::format("Joint {} has an invalid channel {}. Must be between 1 and 16", joint.name, channel).c_str());
-      return hardware_interface::CallbackReturn::ERROR;
-    }
 
     const auto name_it = joint.parameters.find("param_name");
     if (name_it == joint.parameters.cend()) {
-      // NOLINTNEXTLINE
-      RCLCPP_ERROR(logger_, std::format("Joint {} is missing the required parameter 'param_name'", joint.name).c_str());
+      RCLCPP_ERROR(logger_, "Joint %s is missing the required parameter 'param_name'", joint.name.c_str());  // NOLINT
       return hardware_interface::CallbackReturn::ERROR;
     }
     const auto param_name = name_it->second;
 
     const auto default_value_it = joint.parameters.find("default_param_value");
     if (default_value_it == joint.parameters.cend()) {
-      RCLCPP_ERROR(  // NOLINT
-        logger_,
-        std::format("Joint {} is missing the required parameter 'default_param_value'", joint.name).c_str());
+      // NOLINTNEXTLINE
+      RCLCPP_ERROR(logger_, "Joint %s is missing the required parameter 'default_param_value'", joint.name.c_str());
       return hardware_interface::CallbackReturn::ERROR;
     }
     const auto default_value = std::stoi(default_value_it->second);
-    if (default_value < 1000 || default_value > 2000) {
-      RCLCPP_ERROR(  // NOLINT
-        logger_,
-        std::format(
-          "Joint {} has an invalid default parameter value {}. Must be between 1000 and 2000.",
-          joint.name,
-          default_value)
-          .c_str());
-      return hardware_interface::CallbackReturn::ERROR;
-    }
 
     // store the thruster configurations
     ThrusterConfig config;
@@ -180,8 +160,7 @@ auto ThrusterHardware::on_activate(const rclcpp_lifecycle::State & /*previous_st
       const auto responses = future.get()->results;
       for (const auto & response : responses) {
         if (!response.successful) {
-          // NOLINTNEXTLINE
-          RCLCPP_ERROR(logger_, std::format("Failed to set thruster parameter {}.", response.reason).c_str());
+          RCLCPP_ERROR(logger_, "Failed to set thruster parameter %s.", response.reason.c_str());  // NOLINT
           return hardware_interface::CallbackReturn::ERROR;
         }
       }
@@ -197,11 +176,9 @@ auto ThrusterHardware::on_activate(const rclcpp_lifecycle::State & /*previous_st
 
   RCLCPP_ERROR(  // NOLINT
     logger_,
-    std::format(
-      "Failed to set thruster parameters to passthrough mode after {} attempts. Make sure that the MAVROS parameter "
-      "plugin is fully running and configured.",
-      max_retries_)
-      .c_str());
+    "Failed to set thruster parameters to passthrough mode after %d attempts. Make sure that the MAVROS parameter "
+    "plugin is fully running and configured.",
+    max_retries_);
 
   return hardware_interface::CallbackReturn::ERROR;
 }
@@ -232,8 +209,7 @@ auto ThrusterHardware::on_deactivate(const rclcpp_lifecycle::State & /*previous_
       const auto responses = future.get()->results;
       for (const auto & response : responses) {
         if (!response.successful) {
-          // NOLINTNEXTLINE
-          RCLCPP_ERROR(logger_, std::format("Failed to set thruster parameter {}.", response.reason).c_str());
+          RCLCPP_ERROR(logger_, "Failed to set thruster parameter %s.", response.reason.c_str());  // NOLINT
           return hardware_interface::CallbackReturn::ERROR;
         }
       }
@@ -246,11 +222,9 @@ auto ThrusterHardware::on_deactivate(const rclcpp_lifecycle::State & /*previous_
 
   RCLCPP_ERROR(  // NOLINT
     logger_,
-    std::format(
-      "Failed to fully leave passthrough mode after {} attempts. Make sure that the MAVROS parameter plugin is fully "
-      "running and configured.",
-      max_retries_)
-      .c_str());
+    "Failed to fully leave passthrough mode after %d attempts. Make sure that the MAVROS parameter plugin is fully "
+    "running and configured.",
+    max_retries_);
 
   return hardware_interface::CallbackReturn::ERROR;
 }

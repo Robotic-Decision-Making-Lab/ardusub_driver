@@ -68,11 +68,14 @@ JoyInterface::JoyInterface()
         channel = mavros_msgs::msg::OverrideRCIn::CHAN_NOCHANGE;
       }
 
+      const int min_pwm = std::get<0>(pwm_range_);
+      const int max_pwm = std::get<1>(pwm_range_);
+
       // Scale the velocity commands to the PWM range
-      rc_msg.channels[4] = scale_cmd(msg->linear.x, -1.0, 1.0, std::get<0>(pwm_range_), std::get<1>(pwm_range_));
-      rc_msg.channels[5] = scale_cmd(-1 * msg->linear.y, -1.0, 1.0, std::get<0>(pwm_range_), std::get<1>(pwm_range_));
-      rc_msg.channels[2] = scale_cmd(msg->linear.z, -1.0, 1.0, std::get<0>(pwm_range_), std::get<1>(pwm_range_));
-      rc_msg.channels[3] = scale_cmd(-1 * msg->angular.z, -1.0, 1.0, std::get<0>(pwm_range_), std::get<1>(pwm_range_));
+      rc_msg.channels[4] = scale_cmd(msg->linear.x, -1.0, 1.0, min_pwm, max_pwm);
+      rc_msg.channels[5] = scale_cmd(-1 * msg->linear.y, -1.0, 1.0, min_pwm, max_pwm);
+      rc_msg.channels[2] = scale_cmd(msg->linear.z, -1.0, 1.0, min_pwm, max_pwm);
+      rc_msg.channels[3] = scale_cmd(-1 * msg->angular.z, -1.0, 1.0, min_pwm, max_pwm);
 
       rc_override_pub_->publish(rc_msg);
     });
