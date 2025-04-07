@@ -46,8 +46,6 @@ class ThrusterHardware : public hardware_interface::SystemInterface
 public:
   ThrusterHardware() = default;
 
-  RCLCPP_SHARED_PTR_DEFINITIONS(ThrusterHardware)
-
   auto on_init(const hardware_interface::HardwareInfo & info) -> hardware_interface::CallbackReturn override;
 
   auto on_configure(const rclcpp_lifecycle::State & previous_state) -> hardware_interface::CallbackReturn override;

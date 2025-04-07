@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.23)
 project(thruster_hardware)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
@@ -23,7 +23,7 @@ foreach(Dependency IN ITEMS ${THIS_PACKAGE_INCLUDE_DEPENDS})
     find_package(${Dependency} REQUIRED)
 endforeach()
 
-add_library(thruster_hardware)
+add_library(thruster_hardware SHARED)
 target_sources(
     thruster_hardware
     PRIVATE src/thruster_hardware.cpp
@@ -34,8 +34,7 @@ target_sources(
             ${CMAKE_CURRENT_SOURCE_DIR}/include/thruster_hardware/thruster_hardware.hpp
 )
 target_compile_features(thruster_hardware PUBLIC cxx_std_23)
-ament_target_dependencies(thruster_hardware ${THIS_PACKAGE_INCLUDE_DEPENDS})
-
+ament_target_dependencies(thruster_hardware PUBLIC ${THIS_PACKAGE_INCLUDE_DEPENDS})
 pluginlib_export_plugin_description_file(hardware_interface thruster_hardware.xml)
 
 install(
