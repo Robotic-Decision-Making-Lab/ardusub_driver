@@ -21,7 +21,6 @@
 #include "thruster_hardware/thruster_hardware.hpp"
 
 #include "hardware_interface/types/hardware_interface_type_values.hpp"
-#include "pluginlib/class_list_macros.hpp"
 #include "rclcpp/rclcpp.hpp"
 
 namespace thruster_hardware
@@ -256,4 +255,5 @@ auto ThrusterHardware::write(const rclcpp::Time & /*time*/, const rclcpp::Durati
 
 }  // namespace thruster_hardware
 
+#include "pluginlib/class_list_macros.hpp"
 PLUGINLIB_EXPORT_CLASS(thruster_hardware::ThrusterHardware, hardware_interface::SystemInterface)
