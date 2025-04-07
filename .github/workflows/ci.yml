@@ -30,6 +30,3 @@ jobs:
           ROS_DISTRO: ${{ matrix.env.ROS_DISTRO }}
           CXXFLAGS: -Wall -Wextra -Wpedantic
           CLANG_TIDY: true
-          UPSTREAM_WORKSPACE: ros2.repos
-          AFTER_SETUP_UPSTREAM_WORKSPACE: vcs pull $BASEDIR/upstream_ws/src
-          AFTER_SETUP_DOWNSTREAM_WORKSPACE: vcs pull $BASEDIR/downstream_ws/src
