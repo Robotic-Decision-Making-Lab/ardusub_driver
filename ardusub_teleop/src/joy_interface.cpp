@@ -26,7 +26,7 @@ namespace ardusub_teleop
 namespace
 {
 
-int scale_cmd(float value, int old_min, int old_max, int new_min, int new_max)
+auto scale_cmd(float value, int old_min, int old_max, int new_min, int new_max) -> int
 {
   return static_cast<int>((((value - old_min) * (new_max - new_min)) / (old_max - old_min)) + new_min);
 }
@@ -83,7 +83,7 @@ JoyInterface::JoyInterface()
 
 }  // namespace ardusub_teleop
 
-int main(int argc, char ** argv)
+auto main(int argc, char ** argv) -> int
 {
   rclcpp::init(argc, argv);
   rclcpp::spin(std::make_shared<ardusub_teleop::JoyInterface>());
