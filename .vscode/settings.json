@@ -6,13 +6,7 @@
     "*.srdf": "xml",
     "*.rviz": "yaml",
     "*.config": "xml",
-    "*.sdf": "xml",
-    "chrono": "cpp",
-    "typeinfo": "cpp",
-    "array": "cpp",
-    "string_view": "cpp",
-    "initializer_list": "cpp",
-    "span": "cpp"
+    "*.sdf": "xml"
   },
   "terminal.integrated.defaultProfile.linux": "bash",
   "terminal.integrated.profiles.linux": {
