@@ -8,9 +8,10 @@ documentation provided by each package.
 ## Installation
 
 ardusub_driver is currently supported on Linux and is available for the ROS 2
-Iron and Humble distributions. Prior to installing this project, first install [MAVROS](https://github.com/mavlink/mavros)
-and its dependencies. Once MAVROS has been successfully installed, clone
-ardusub_driver to the `src` directory of your ROS workspace:
+Rolling and Jazzy distributions. Prior to installing this project, first
+install [MAVROS](https://github.com/mavlink/mavros) and its dependencies. Once
+MAVROS has been successfully installed, clone ardusub_driver to the `src`
+directory of your ROS workspace:
 
 ```bash
 git clone git@github.com:Robotic-Decision-Making-Lab/ardusub_driver.git

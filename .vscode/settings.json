@@ -24,7 +24,7 @@
   "C_Cpp.clang_format_fallbackStyle": "Google",
   "C_Cpp.codeAnalysis.clangTidy.enabled": true,
   "C_Cpp.codeAnalysis.clangTidy.codeAction.formatFixes": true,
-  "clang-format.executable": "/usr/bin/clang-format-14",
+  "clang-format.executable": "/usr/bin/clang-format-18",
   "[cpp]": {
     "editor.rulers": [120],
     "editor.tabSize": 2,
@@ -51,5 +51,6 @@
     "**/build": true,
     "**/install": true,
     "**/log": true
-  }
+  },
+  "cmake.ignoreCMakeListsMissing": true
 }

@@ -1,5 +1,4 @@
 launch:
-
   - arg:
       name: joy_file
 

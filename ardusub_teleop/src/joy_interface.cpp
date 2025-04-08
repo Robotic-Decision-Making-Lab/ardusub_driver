@@ -26,7 +26,7 @@ namespace ardusub_teleop
 namespace
 {
 
-int scale_cmd(float value, int old_min, int old_max, int new_min, int new_max)
+auto scale_cmd(float value, int old_min, int old_max, int new_min, int new_max) -> int
 {
   return static_cast<int>((((value - old_min) * (new_max - new_min)) / (old_max - old_min)) + new_min);
 }
@@ -42,9 +42,10 @@ JoyInterface::JoyInterface()
   pwm_range_ = std::make_tuple(this->get_parameter("min_pwm").as_int(), this->get_parameter("max_pwm").as_int());
 
   enable_pwm_service_ = create_service<std_srvs::srv::SetBool>(
-    "~/enable_pwm_control", [this](
-                              const std::shared_ptr<std_srvs::srv::SetBool::Request> request,  // NOLINT
-                              std::shared_ptr<std_srvs::srv::SetBool::Response> response) {    // NOLINT
+    "~/enable_pwm_control",
+    [this](
+      const std::shared_ptr<std_srvs::srv::SetBool::Request> request,  // NOLINT
+      std::shared_ptr<std_srvs::srv::SetBool::Response> response) {    // NOLINT
       pwm_enabled_ = request->data;
       response->success = true;
       return;
@@ -67,11 +68,14 @@ JoyInterface::JoyInterface()
         channel = mavros_msgs::msg::OverrideRCIn::CHAN_NOCHANGE;
       }
 
+      const int min_pwm = std::get<0>(pwm_range_);
+      const int max_pwm = std::get<1>(pwm_range_);
+
       // Scale the velocity commands to the PWM range
-      rc_msg.channels[4] = scale_cmd(msg->linear.x, -1.0, 1.0, std::get<0>(pwm_range_), std::get<1>(pwm_range_));
-      rc_msg.channels[5] = scale_cmd(-1 * msg->linear.y, -1.0, 1.0, std::get<0>(pwm_range_), std::get<1>(pwm_range_));
-      rc_msg.channels[2] = scale_cmd(msg->linear.z, -1.0, 1.0, std::get<0>(pwm_range_), std::get<1>(pwm_range_));
-      rc_msg.channels[3] = scale_cmd(-1 * msg->angular.z, -1.0, 1.0, std::get<0>(pwm_range_), std::get<1>(pwm_range_));
+      rc_msg.channels[4] = scale_cmd(msg->linear.x, -1.0, 1.0, min_pwm, max_pwm);
+      rc_msg.channels[5] = scale_cmd(-1 * msg->linear.y, -1.0, 1.0, min_pwm, max_pwm);
+      rc_msg.channels[2] = scale_cmd(msg->linear.z, -1.0, 1.0, min_pwm, max_pwm);
+      rc_msg.channels[3] = scale_cmd(-1 * msg->angular.z, -1.0, 1.0, min_pwm, max_pwm);
 
       rc_override_pub_->publish(rc_msg);
     });
@@ -79,7 +83,7 @@ JoyInterface::JoyInterface()
 
 }  // namespace ardusub_teleop
 
-int main(int argc, char ** argv)
+auto main(int argc, char ** argv) -> int
 {
   rclcpp::init(argc, argv);
   rclcpp::spin(std::make_shared<ardusub_teleop::JoyInterface>());

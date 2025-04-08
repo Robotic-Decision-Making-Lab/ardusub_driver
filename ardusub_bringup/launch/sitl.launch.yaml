@@ -10,6 +10,9 @@ launch:
   - arg:
       name: ardusub_params_file
 
+  - arg:
+      name: base_port
+
   # Nodes
   - node:
       pkg: ros_gz_bridge
@@ -33,7 +36,7 @@ launch:
 
   # Processes
   - executable:
-      cmd: ardusub -S -w -M JSON --defaults $(var ardusub_params_file) -IO --home 44.65870,-124.06556,0.0,270.0
+      cmd: ardusub -S -w -M JSON --defaults $(var ardusub_params_file) -IO --home 44.65870,-124.06556,0.0,270.0 --base-port $(var base_port)
 
   # Includes
   - include:

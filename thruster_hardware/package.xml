@@ -3,7 +3,7 @@
 <package format="3">
   <name>thruster_hardware</name>
   <version>0.0.1</version>
-  <description>A ros2_control hardware interface for direct thruster control via ArduSub.</description>
+  <description>A ros2_control hardware interface for direct thruster control via ArduSub</description>
 
   <maintainer email="evanp922@gmail.com">Evan Palmer</maintainer>
   <license>MIT</license>

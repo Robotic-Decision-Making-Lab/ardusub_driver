@@ -35,43 +35,30 @@
 #include "rclcpp/time.hpp"
 #include "rclcpp_lifecycle/node_interfaces/lifecycle_node_interface.hpp"
 #include "rclcpp_lifecycle/state.hpp"
-#include "realtime_tools/realtime_buffer.h"
-#include "realtime_tools/realtime_publisher.h"
-#include "thruster_hardware/visibility_control.h"
+#include "realtime_tools/realtime_buffer.hpp"
+#include "realtime_tools/realtime_publisher.hpp"
 
 namespace thruster_hardware
 {
 
 class ThrusterHardware : public hardware_interface::SystemInterface
 {
-  RCLCPP_SHARED_PTR_DEFINITIONS(ThrusterHardware)
-  hardware_interface::CallbackReturn on_init(const hardware_interface::HardwareInfo & info) override;
+public:
+  ThrusterHardware() = default;
 
-  THRUSTER_HARDWARE_PUBLIC
-  hardware_interface::CallbackReturn on_configure(const rclcpp_lifecycle::State & previous_state) override;
+  auto on_init(const hardware_interface::HardwareInfo & info) -> hardware_interface::CallbackReturn override;
 
-  THRUSTER_HARDWARE_PUBLIC
-  hardware_interface::CallbackReturn on_cleanup(const rclcpp_lifecycle::State & previous_state) override;
+  auto on_configure(const rclcpp_lifecycle::State & previous_state) -> hardware_interface::CallbackReturn override;
 
-  THRUSTER_HARDWARE_PUBLIC
-  hardware_interface::CallbackReturn on_activate(const rclcpp_lifecycle::State & previous_state) override;
+  auto on_activate(const rclcpp_lifecycle::State & previous_state) -> hardware_interface::CallbackReturn override;
 
-  THRUSTER_HARDWARE_PUBLIC
-  hardware_interface::CallbackReturn on_deactivate(const rclcpp_lifecycle::State & previous_state) override;
+  auto on_deactivate(const rclcpp_lifecycle::State & previous_state) -> hardware_interface::CallbackReturn override;
 
-  THRUSTER_HARDWARE_PUBLIC
-  std::vector<hardware_interface::StateInterface> export_state_interfaces() override;
+  auto read(const rclcpp::Time & time, const rclcpp::Duration & period) -> hardware_interface::return_type override;
 
-  THRUSTER_HARDWARE_PUBLIC
-  std::vector<hardware_interface::CommandInterface> export_command_interfaces() override;
+  auto write(const rclcpp::Time & time, const rclcpp::Duration & period) -> hardware_interface::return_type override;
 
-  THRUSTER_HARDWARE_PUBLIC
-  hardware_interface::return_type read(const rclcpp::Time & time, const rclcpp::Duration & period) override;
-
-  THRUSTER_HARDWARE_PUBLIC
-  hardware_interface::return_type write(const rclcpp::Time & time, const rclcpp::Duration & period) override;
-
-protected:
+private:
   struct ThrusterConfig
   {
     rcl_interfaces::msg::Parameter param;
@@ -79,7 +66,7 @@ protected:
     int neutral_pwm = 1500;
   };
 
-  void stop_thrusters();
+  auto stop_thrusters() -> void;
 
   // We need a node to interact with MAVROS
   std::shared_ptr<rclcpp::Node> node_;
@@ -88,10 +75,10 @@ protected:
   std::unique_ptr<realtime_tools::RealtimePublisher<mavros_msgs::msg::OverrideRCIn>> rt_override_rc_pub_;
 
   std::shared_ptr<rclcpp::Client<rcl_interfaces::srv::SetParameters>> set_params_client_;
-  std::vector<ThrusterConfig> thruster_configs_;
+  std::unordered_map<std::string, ThrusterConfig> thruster_configs_;
 
   int max_retries_;
-  std::vector<double> hw_commands_pwm_;
+  rclcpp::Logger logger_{rclcpp::get_logger("ardusub_thruster_hardware")};
 };
 
 }  // namespace thruster_hardware
