@@ -3,7 +3,7 @@ name: Continuous Integration
 on:
   push:
     branches:
-      - main
+      - jazzy
   pull_request:
   workflow_dispatch:
 
