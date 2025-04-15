@@ -21,6 +21,9 @@
   <depend>hardware_interface</depend>
   <depend>pluginlib</depend>
   <depend>mavros_msgs</depend>
+  <depend>gz_sim_vendor</depend>
+  <depend>gz_plugin_vendor</depend>
+  <depend>gz_ros2_control</depend>
 
   <test_depend>ament_lint_auto</test_depend>
 

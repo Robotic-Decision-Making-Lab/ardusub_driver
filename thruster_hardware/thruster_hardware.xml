@@ -6,4 +6,12 @@
       ArduSub thruster hardware plugin for ros2_control using a system hardware interface-type.
     </description>
   </class>
+
+  <class name="thruster_hardware/GazeboThrusterHardware"
+    type="thruster_hardware::GazeboThrusterHardware"
+    base_class_type="gz_ros2_control::GazeboSimSystemInterface">
+    <description>
+      A wrapper around the ThrusterHardware plugin for Gazebo.
+    </description>
+  </class>
 </library>

@@ -257,3 +257,4 @@ auto ThrusterHardware::write(const rclcpp::Time & /*time*/, const rclcpp::Durati
 
 #include "pluginlib/class_list_macros.hpp"
 PLUGINLIB_EXPORT_CLASS(thruster_hardware::ThrusterHardware, hardware_interface::SystemInterface)
+PLUGINLIB_EXPORT_CLASS(thruster_hardware::GazeboThrusterHardware, gz_ros2_control::GazeboSimSystemInterface)

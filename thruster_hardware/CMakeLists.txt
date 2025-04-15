@@ -16,12 +16,19 @@ set(THIS_PACKAGE_INCLUDE_DEPENDS
     rcl_interfaces
     rclcpp_lifecycle
     realtime_tools
+    gz_ros2_control
 )
 
 find_package(ament_cmake REQUIRED)
 foreach(Dependency IN ITEMS ${THIS_PACKAGE_INCLUDE_DEPENDS})
     find_package(${Dependency} REQUIRED)
 endforeach()
+
+find_package(gz_sim_vendor REQUIRED)
+find_package(gz-sim REQUIRED)
+
+find_package(gz_plugin_vendor REQUIRED)
+find_package(gz-plugin REQUIRED)
 
 add_library(thruster_hardware SHARED)
 target_sources(
@@ -33,6 +40,7 @@ target_sources(
         FILES
             ${CMAKE_CURRENT_SOURCE_DIR}/include/thruster_hardware/thruster_hardware.hpp
 )
+target_link_libraries(thruster_hardware PRIVATE gz-sim::gz-sim gz-plugin::register)
 target_compile_features(thruster_hardware PUBLIC cxx_std_23)
 ament_target_dependencies(thruster_hardware PUBLIC ${THIS_PACKAGE_INCLUDE_DEPENDS})
 pluginlib_export_plugin_description_file(hardware_interface thruster_hardware.xml)

@@ -23,6 +23,7 @@
 #include <memory>
 #include <vector>
 
+#include "gz_ros2_control/gz_system_interface.hpp"
 #include "hardware_interface/handle.hpp"
 #include "hardware_interface/hardware_info.hpp"
 #include "hardware_interface/system_interface.hpp"
@@ -79,6 +80,55 @@ private:
 
   int max_retries_;
   rclcpp::Logger logger_{rclcpp::get_logger("ardusub_thruster_hardware")};
+};
+
+class GazeboThrusterHardware : public gz_ros2_control::GazeboSimSystemInterface
+{
+public:
+  GazeboThrusterHardware() = default;
+
+  auto on_init(const hardware_interface::HardwareInfo & info) -> hardware_interface::CallbackReturn override
+  {
+    return thruster_hardware_.on_init(info);
+  }
+
+  auto on_configure(const rclcpp_lifecycle::State & previous_state) -> hardware_interface::CallbackReturn override
+  {
+    return thruster_hardware_.on_configure(previous_state);
+  }
+
+  auto on_activate(const rclcpp_lifecycle::State & previous_state) -> hardware_interface::CallbackReturn override
+  {
+    return thruster_hardware_.on_activate(previous_state);
+  }
+
+  auto on_deactivate(const rclcpp_lifecycle::State & previous_state) -> hardware_interface::CallbackReturn override
+  {
+    return thruster_hardware_.on_deactivate(previous_state);
+  }
+
+  auto read(const rclcpp::Time & time, const rclcpp::Duration & period) -> hardware_interface::return_type override
+  {
+    return thruster_hardware_.read(time, period);
+  }
+
+  auto write(const rclcpp::Time & time, const rclcpp::Duration & period) -> hardware_interface::return_type override
+  {
+    return thruster_hardware_.write(time, period);
+  }
+
+  auto initSim(
+    rclcpp::Node::SharedPtr & /*model_nh*/,
+    std::map<std::string, sim::Entity> & /*joints*/,
+    const hardware_interface::HardwareInfo & /*hardware_info*/,
+    sim::EntityComponentManager & /*_ecm*/,
+    unsigned int /*update_rate*/) -> bool override
+  {
+    return true;
+  }
+
+private:
+  ThrusterHardware thruster_hardware_;
 };
 
 }  // namespace thruster_hardware
