@@ -20,6 +20,8 @@
 
 #include "thruster_hardware/thruster_hardware.hpp"
 
+#include <chrono>
+
 #include "hardware_interface/types/hardware_interface_type_values.hpp"
 #include "rclcpp/rclcpp.hpp"
 
@@ -147,13 +149,9 @@ auto ThrusterHardware::on_activate(const rclcpp_lifecycle::State & /*previous_st
     params.emplace_back(param);
   }
 
-  auto request = std::make_shared<rcl_interfaces::srv::SetParameters::Request>();
-  request->parameters = params;
-
-  for (int i = 0; i < max_retries_; ++i) {
+  auto set_thruster_params = [this](const std::shared_ptr<rcl_interfaces::srv::SetParameters::Request> & request)
+    -> hardware_interface::CallbackReturn {
     RCLCPP_WARN(logger_, "Attempting to set thruster parameters to RC passthrough...");  // NOLINT
-
-    // Wait until the result is available
     auto future = set_params_client_->async_send_request(request);
     if (rclcpp::spin_until_future_complete(node_, future) == rclcpp::FutureReturnCode::SUCCESS) {
       const auto responses = future.get()->results;
@@ -163,14 +161,30 @@ auto ThrusterHardware::on_activate(const rclcpp_lifecycle::State & /*previous_st
           return hardware_interface::CallbackReturn::ERROR;
         }
       }
-
       RCLCPP_INFO(logger_, "Successfully set thruster parameters to RC passthrough!");  // NOLINT
-
-      // Stop the thrusters before switching to an external controller
       stop_thrusters();
-
       return hardware_interface::CallbackReturn::SUCCESS;
     }
+    return hardware_interface::CallbackReturn::ERROR;
+  };
+
+  auto request = std::make_shared<rcl_interfaces::srv::SetParameters::Request>();
+  request->parameters = params;
+
+  if (max_retries_ < 0) {
+    RCLCPP_INFO(logger_, "Retry limit disabled. Waiting indefinitely for passthrough mode...");  // NOLINT
+    while (set_thruster_params(request) != hardware_interface::CallbackReturn::SUCCESS) {
+      RCLCPP_ERROR(logger_, "Failed to set thruster parameters to passthrough mode. Retrying...");  // NOLINT
+      std::this_thread::sleep_for(std::chrono::seconds(1));
+    }
+    return hardware_interface::CallbackReturn::SUCCESS;
+  }
+
+  for (int i = 0; i < max_retries_; ++i) {
+    if (set_thruster_params(request) == hardware_interface::CallbackReturn::SUCCESS) {
+      return hardware_interface::CallbackReturn::SUCCESS;
+    }
+    std::this_thread::sleep_for(std::chrono::seconds(1));
   }
 
   RCLCPP_ERROR(  // NOLINT
