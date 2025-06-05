@@ -47,6 +47,9 @@
     "editor.rulers": [80],
     "editor.defaultFormatter": "DavidAnson.vscode-markdownlint"
   },
+  "[yaml]": {
+    "editor.rulers": [80]
+  },
   "search.exclude": {
     "**/build": true,
     "**/install": true,
