@@ -1,5 +1,5 @@
 ARG ROS_DISTRO=rolling
-FROM ros:$ROS_DISTRO-ros-base as desktop
+FROM ros:$ROS_DISTRO-ros-base AS desktop
 
 ENV DEBIAN_FRONTEND=noninteractive
 WORKDIR /root/ws_ros

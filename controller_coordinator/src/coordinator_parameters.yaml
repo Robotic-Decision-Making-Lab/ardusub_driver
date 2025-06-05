@@ -1,0 +1,22 @@
+controller_coordinator:
+  thruster_hardware:
+    type: string
+    description: The name of the thruster hardware interface.
+    default_value: ""
+
+  activation_timeout:
+    type: double
+    description: The timeout in seconds for activating/deactivating controllers.
+    default_value: 5.0
+
+  max_attempts:
+    type: int
+    description: >
+      The maximum number of attempts to load/unload and activate/deactivate the
+      controllers.
+    default_value: 3
+
+  load_sequence:
+    type: string_array
+    description: An ordered list of controllers to load.
+    default_value: []
