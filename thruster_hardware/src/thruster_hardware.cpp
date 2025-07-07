@@ -169,6 +169,9 @@ auto ThrusterHardware::on_activate(const rclcpp_lifecycle::State & /*previous_st
       // Stop the thrusters before switching to an external controller
       stop_thrusters();
 
+      // start sending rc override messages from the write loop
+      is_active_ = true;
+
       return hardware_interface::CallbackReturn::SUCCESS;
     }
   }
@@ -179,12 +182,18 @@ auto ThrusterHardware::on_activate(const rclcpp_lifecycle::State & /*previous_st
     "plugin is fully running and configured.",
     max_retries_);
 
+  // don't send rc override messages if we failed to set the parameters
+  is_active_ = false;
+
   return hardware_interface::CallbackReturn::ERROR;
 }
 
 auto ThrusterHardware::on_deactivate(const rclcpp_lifecycle::State & /*previous_state*/)
   -> hardware_interface::CallbackReturn
 {
+  // stop sending rc override messages from the write loop
+  is_active_ = false;
+
   // stop the thrusters before switching out of passthrough mode
   stop_thrusters();
 
@@ -237,6 +246,10 @@ auto ThrusterHardware::read(const rclcpp::Time & /*time*/, const rclcpp::Duratio
 auto ThrusterHardware::write(const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/)
   -> hardware_interface::return_type
 {
+  if (!is_active_) {
+    return hardware_interface::return_type::OK;
+  }
+
   if (rt_override_rc_pub_ && rt_override_rc_pub_->trylock()) {
     for (const auto & [name, desc] : joint_command_interfaces_) {
       const auto command = get_command(name);
