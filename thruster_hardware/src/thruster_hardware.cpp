@@ -246,7 +246,11 @@ auto ThrusterHardware::read(const rclcpp::Time & /*time*/, const rclcpp::Duratio
 auto ThrusterHardware::write(const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/)
   -> hardware_interface::return_type
 {
-  if (rt_override_rc_pub_ && rt_override_rc_pub_->trylock() && is_active_) {
+  if (!is_active_) {
+    return hardware_interface::return_type::OK;
+  }
+
+  if (rt_override_rc_pub_ && rt_override_rc_pub_->trylock()) {
     for (const auto & [name, desc] : joint_command_interfaces_) {
       const auto command = get_command(name);
       if (std::isnan(command)) {
