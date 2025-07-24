@@ -46,7 +46,8 @@ class ThrusterHardware : public hardware_interface::SystemInterface
 public:
   ThrusterHardware() = default;
 
-  auto on_init(const hardware_interface::HardwareInfo & info) -> hardware_interface::CallbackReturn override;
+  auto on_init(const hardware_interface::HardwareComponentInterfaceParams & info)
+    -> hardware_interface::CallbackReturn override;
 
   auto on_configure(const rclcpp_lifecycle::State & previous_state) -> hardware_interface::CallbackReturn override;
 
@@ -67,9 +68,6 @@ private:
   };
 
   auto stop_thrusters() -> void;
-
-  // We need a node to interact with MAVROS
-  std::shared_ptr<rclcpp::Node> node_;
 
   std::shared_ptr<rclcpp::Publisher<mavros_msgs::msg::OverrideRCIn>> override_rc_pub_;
   std::unique_ptr<realtime_tools::RealtimePublisher<mavros_msgs::msg::OverrideRCIn>> rt_override_rc_pub_;

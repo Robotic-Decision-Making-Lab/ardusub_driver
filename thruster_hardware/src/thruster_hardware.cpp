@@ -20,13 +20,16 @@
 
 #include "thruster_hardware/thruster_hardware.hpp"
 
+#include <optional>
+
 #include "hardware_interface/types/hardware_interface_type_values.hpp"
 #include "rclcpp/rclcpp.hpp"
 
 namespace thruster_hardware
 {
 
-auto ThrusterHardware::on_init(const hardware_interface::HardwareInfo & info) -> hardware_interface::CallbackReturn
+auto ThrusterHardware::on_init(const hardware_interface::HardwareComponentInterfaceParams & info)
+  -> hardware_interface::CallbackReturn
 {
   RCLCPP_INFO(logger_, "Initializing the ThrusterHardware interface");  // NOLINT
 
@@ -35,40 +38,44 @@ auto ThrusterHardware::on_init(const hardware_interface::HardwareInfo & info) ->
     return hardware_interface::CallbackReturn::ERROR;
   }
 
-  const auto retries_it = info_.hardware_parameters.find("max_set_param_attempts");
-  if (retries_it == info_.hardware_parameters.cend()) {
-    RCLCPP_ERROR(logger_, "Missing the required parameter 'max_set_param_attempts'");  // NOLINT
-    return hardware_interface::CallbackReturn::ERROR;
-  }
-  max_retries_ = std::stoi(retries_it->second);
+  // simple helper method to get parameters from an interface
+  auto get_param = [&logger = logger_](
+                     const std::unordered_map<std::string, std::string> & params,
+                     const std::string & param_name) -> std::optional<int> {
+    auto it = params.find(param_name);
+    return it == params.cend() ? std::nullopt : std::optional<int>(std::stoi(it->second));
+  };
+
+  // not required - default to 3 if not provided
+  max_retries_ = get_param(info_.hardware_parameters, "max_set_param_attempts").value_or(3);
 
   // retrieve and validate the joint parameters
   for (const auto & joint : info_.joints) {
-    const auto channel_it = joint.parameters.find("channel");
-    if (channel_it == joint.parameters.cend()) {
+    const auto channel_it = get_param(joint.parameters, "channel");
+    if (!channel_it.has_value()) {
       RCLCPP_ERROR(logger_, "Joint %s is missing the required parameter 'channel'", joint.name.c_str());  // NOLINT
       return hardware_interface::CallbackReturn::ERROR;
     }
-    const auto channel = std::stoi(channel_it->second);
+    const int channel = channel_it.value();
 
-    const auto name_it = joint.parameters.find("param_name");
-    if (name_it == joint.parameters.cend()) {
+    const auto name_it = get_param(joint.parameters, "param_name");
+    if (!name_it.has_value()) {
       RCLCPP_ERROR(logger_, "Joint %s is missing the required parameter 'param_name'", joint.name.c_str());  // NOLINT
       return hardware_interface::CallbackReturn::ERROR;
     }
-    const auto param_name = name_it->second;
+    const int name = name_it.value();
 
-    const auto default_value_it = joint.parameters.find("default_param_value");
-    if (default_value_it == joint.parameters.cend()) {
+    const auto default_value_it = get_param(joint.parameters, "default_param_value");
+    if (!default_value_it.has_value()) {
       // NOLINTNEXTLINE
       RCLCPP_ERROR(logger_, "Joint %s is missing the required parameter 'default_param_value'", joint.name.c_str());
       return hardware_interface::CallbackReturn::ERROR;
     }
-    const auto default_value = std::stoi(default_value_it->second);
+    const int default_value = default_value_it.value();
 
     // store the thruster configurations
     ThrusterConfig config;
-    config.param.name = param_name;
+    config.param.name = name;
     config.param.value.type = rcl_interfaces::msg::ParameterType::PARAMETER_INTEGER;
     config.param.value.integer_value = default_value;
     config.channel = channel;
@@ -79,11 +86,6 @@ auto ThrusterHardware::on_init(const hardware_interface::HardwareInfo & info) ->
 
     thruster_configs_[joint.name] = config;
   }
-
-  // construct a node to use for interacting with MAVROS
-  rclcpp::NodeOptions options;
-  options.arguments({"--ros-args", "-r", "__node:=thruster_hardware" + info_.name});
-  node_ = rclcpp::Node::make_shared("_", options);
 
   return hardware_interface::CallbackReturn::SUCCESS;
 }
@@ -98,7 +100,7 @@ auto ThrusterHardware::on_configure(const rclcpp_lifecycle::State & /*previous_s
 
   // configure the publisher for the override RC messages
   override_rc_pub_ =
-    node_->create_publisher<mavros_msgs::msg::OverrideRCIn>("mavros/rc/override", rclcpp::SystemDefaultsQoS());
+    get_node()->create_publisher<mavros_msgs::msg::OverrideRCIn>("mavros/rc/override", rclcpp::SystemDefaultsQoS());
   rt_override_rc_pub_ =
     std::make_unique<realtime_tools::RealtimePublisher<mavros_msgs::msg::OverrideRCIn>>(override_rc_pub_);
 
@@ -110,7 +112,7 @@ auto ThrusterHardware::on_configure(const rclcpp_lifecycle::State & /*previous_s
 
   // configure a service client to set the ardusub thruster parameters
   using namespace std::chrono_literals;
-  set_params_client_ = node_->create_client<rcl_interfaces::srv::SetParameters>("mavros/param/set_parameters");
+  set_params_client_ = get_node()->create_client<rcl_interfaces::srv::SetParameters>("mavros/param/set_parameters");
   while (!set_params_client_->wait_for_service(1s)) {
     if (!rclcpp::ok()) {
       RCLCPP_ERROR(logger_, "Interrupted while waiting for the `mavros/set_parameters` service");  // NOLINT
@@ -155,7 +157,7 @@ auto ThrusterHardware::on_activate(const rclcpp_lifecycle::State & /*previous_st
 
     // Wait until the result is available
     auto future = set_params_client_->async_send_request(request);
-    if (rclcpp::spin_until_future_complete(node_, future) == rclcpp::FutureReturnCode::SUCCESS) {
+    if (rclcpp::spin_until_future_complete(get_node(), future) == rclcpp::FutureReturnCode::SUCCESS) {
       const auto responses = future.get()->results;
       for (const auto & response : responses) {
         if (!response.successful) {
@@ -213,7 +215,7 @@ auto ThrusterHardware::on_deactivate(const rclcpp_lifecycle::State & /*previous_
     auto future = set_params_client_->async_send_request(request);
 
     // Wait until the result is available
-    if (rclcpp::spin_until_future_complete(node_, future) == rclcpp::FutureReturnCode::SUCCESS) {
+    if (rclcpp::spin_until_future_complete(get_node(), future) == rclcpp::FutureReturnCode::SUCCESS) {
       const auto responses = future.get()->results;
       for (const auto & response : responses) {
         if (!response.successful) {
