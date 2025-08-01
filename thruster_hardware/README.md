@@ -2,7 +2,7 @@
 
 thruster_hardware implements a ros2_control system hardware interface for
 individual thruster-level control. This is accomplished by dynamically setting
-the ArduSub `SERVON_FUNCTION` parameters for each thruster to PWM RCIN mode
+the ArduSub `SERVON_FUNCTION` parameters for each thruster to RCIN mode
 using MAVROS.
 
 > [!IMPORTANT]
@@ -10,7 +10,7 @@ using MAVROS.
 > *after* MAVROS has fully loaded the "param", "command", and "rc_io" plugins.
 
 > [!CAUTION]
-> Please exercise caution when using PWM RCIN mode. This mode disables all
+> Please exercise caution when using RCIN mode. This mode disables all
 > ArduSub arming checks. It is also recommended that you store a backup of the
 > ArduSub parameters should the hardware interface fail to restore the default
 > parameters.
