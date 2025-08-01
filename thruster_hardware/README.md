@@ -30,10 +30,10 @@ thruster_hardware/ThrusterHardware
 * default_param_value: The default value of the servo function parameter. The
   thruster hardware will attempt to restore these parameters on deactivation.
   [integer]
-* channel: The thruster channel number. [integer]
-* desired_param_value: The desired value for the servo function parameter
-  (e.g., 51 corresponds to RCIN1). It is recommended to avoid using RCIN7
-  through RCIN11, as these channels may conflict with other vehicle
+* channel: The thruster channel number. It is recommended to avoid using
+  channels 7 through 11, as these channels may conflict with other vehicle
   functionalities. [integer]
+* desired_param_value: The desired value for the servo function parameter
+  (e.g., `51` corresponds to `RCIN1`). [integer]
 * neutral_pwm (optional): The neutral PWM value for the thruster. This
   defaults to 1500. [integer]
