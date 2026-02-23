@@ -75,7 +75,7 @@ auto ThrusterHardware::on_init(const hardware_interface::HardwareComponentInterf
 
     // store the thruster configurations
     ThrusterConfig config;
-    config.param.name = name;
+    config.param.name = std::to_string(name);
     config.param.value.type = rcl_interfaces::msg::ParameterType::PARAMETER_INTEGER;
     config.param.value.integer_value = default_value;
     config.channel = channel;
@@ -104,11 +104,9 @@ auto ThrusterHardware::on_configure(const rclcpp_lifecycle::State & /*previous_s
   rt_override_rc_pub_ =
     std::make_unique<realtime_tools::RealtimePublisher<mavros_msgs::msg::OverrideRCIn>>(override_rc_pub_);
 
-  rt_override_rc_pub_->lock();
-  for (auto & channel : rt_override_rc_pub_->msg_.channels) {
+  for (auto & channel : rc_override_msg_.channels) {
     channel = mavros_msgs::msg::OverrideRCIn::CHAN_NOCHANGE;
   }
-  rt_override_rc_pub_->unlock();
 
   // configure a service client to set the ardusub thruster parameters
   using namespace std::chrono_literals;
@@ -127,11 +125,12 @@ auto ThrusterHardware::on_configure(const rclcpp_lifecycle::State & /*previous_s
 // NOLINTNEXTLINE(readability-convert-member-functions-to-static)
 auto ThrusterHardware::stop_thrusters() -> void
 {
-  if (rt_override_rc_pub_ && rt_override_rc_pub_->trylock()) {
-    for (const auto & [name, config] : thruster_configs_) {
-      rt_override_rc_pub_->msg_.channels[config.channel - 1] = config.neutral_pwm;
-    }
-    rt_override_rc_pub_->unlockAndPublish();
+  for (const auto & [name, config] : thruster_configs_) {
+    rc_override_msg_.channels[config.channel - 1] = config.neutral_pwm;
+  }
+
+  if (rt_override_rc_pub_ && rt_override_rc_pub_->can_publish()) {
+    rt_override_rc_pub_->try_publish(rc_override_msg_);
   }
 }
 
@@ -252,17 +251,18 @@ auto ThrusterHardware::write(const rclcpp::Time & /*time*/, const rclcpp::Durati
     return hardware_interface::return_type::OK;
   }
 
-  if (rt_override_rc_pub_ && rt_override_rc_pub_->trylock()) {
-    for (const auto & [name, desc] : joint_command_interfaces_) {
-      const auto command = get_command(name);
-      if (std::isnan(command)) {
-        continue;
-      }
-
-      const auto config = thruster_configs_.at(desc.prefix_name);
-      rt_override_rc_pub_->msg_.channels[config.channel - 1] = static_cast<int>(command);
+  for (const auto & [name, desc] : joint_command_interfaces_) {
+    const auto command = get_command(name);
+    if (std::isnan(command)) {
+      continue;
     }
-    rt_override_rc_pub_->unlockAndPublish();
+
+    const auto config = thruster_configs_.at(desc.prefix_name);
+    rc_override_msg_.channels[config.channel - 1] = static_cast<int>(command);
+  }
+
+  if (rt_override_rc_pub_ && rt_override_rc_pub_->can_publish()) {
+    rt_override_rc_pub_->try_publish(rc_override_msg_);
   }
 
   return hardware_interface::return_type::OK;

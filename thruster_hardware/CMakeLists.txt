@@ -7,21 +7,14 @@ endif()
 
 include(GNUInstallDirs)
 
-set(THIS_PACKAGE_INCLUDE_DEPENDS
-    rclcpp
-    rclcpp_lifecycle
-    pluginlib
-    hardware_interface
-    mavros_msgs
-    rcl_interfaces
-    rclcpp_lifecycle
-    realtime_tools
-)
-
 find_package(ament_cmake REQUIRED)
-foreach(Dependency IN ITEMS ${THIS_PACKAGE_INCLUDE_DEPENDS})
-    find_package(${Dependency} REQUIRED)
-endforeach()
+find_package(rclcpp REQUIRED)
+find_package(rclcpp_lifecycle REQUIRED)
+find_package(pluginlib REQUIRED)
+find_package(hardware_interface REQUIRED)
+find_package(mavros_msgs REQUIRED)
+find_package(rcl_interfaces REQUIRED)
+find_package(realtime_tools REQUIRED)
 
 add_library(thruster_hardware SHARED)
 target_sources(
@@ -34,7 +27,18 @@ target_sources(
             ${CMAKE_CURRENT_SOURCE_DIR}/include/thruster_hardware/thruster_hardware.hpp
 )
 target_compile_features(thruster_hardware PUBLIC cxx_std_23)
-ament_target_dependencies(thruster_hardware PUBLIC ${THIS_PACKAGE_INCLUDE_DEPENDS})
+target_link_libraries(
+    thruster_hardware
+    PUBLIC
+        ${mavros_msgs_TARGETS}
+        ${rcl_interfaces_TARGETS}
+        rclcpp::rclcpp
+        rclcpp_lifecycle::rclcpp_lifecycle
+        pluginlib::pluginlib
+        hardware_interface::hardware_interface
+        realtime_tools::realtime_tools
+)
+
 pluginlib_export_plugin_description_file(hardware_interface thruster_hardware.xml)
 
 install(
@@ -47,6 +51,14 @@ install(
 )
 
 ament_export_targets(export_thruster_hardware HAS_LIBRARY_TARGET)
-ament_export_dependencies(${THIS_PACKAGE_INCLUDE_DEPENDS})
+ament_export_dependencies(
+    "rclcpp"
+    "rclcpp_lifecycle"
+    "pluginlib"
+    "hardware_interface"
+    "mavros_msgs"
+    "rcl_interfaces"
+    "realtime_tools"
+)
 
 ament_package()

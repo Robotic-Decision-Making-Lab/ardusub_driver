@@ -75,6 +75,9 @@ private:
   std::shared_ptr<rclcpp::Client<rcl_interfaces::srv::SetParameters>> set_params_client_;
   std::unordered_map<std::string, ThrusterConfig> thruster_configs_;
 
+  // maintain a message so that we don't have to allocate one every time we write to the hardware
+  mavros_msgs::msg::OverrideRCIn rc_override_msg_;
+
   // the write loop run regardless of whether or not the hardware is active
   // so we need to keep track of this to ensure that we only send commands when the hardware is active
   bool is_active_{false};
