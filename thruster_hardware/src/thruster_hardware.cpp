@@ -58,12 +58,13 @@ auto ThrusterHardware::on_init(const hardware_interface::HardwareComponentInterf
     }
     const int channel = channel_it.value();
 
-    const auto name_it = get_param(joint.parameters, "param_name");
-    if (!name_it.has_value()) {
+    // the `param_name` parameter is a string so we can't use our `get_param` helper here
+    auto name_it = joint.parameters.find("param_name");
+    if (name_it == joint.parameters.cend()) {
       RCLCPP_ERROR(logger_, "Joint %s is missing the required parameter 'param_name'", joint.name.c_str());  // NOLINT
       return hardware_interface::CallbackReturn::ERROR;
     }
-    const int name = name_it.value();
+    const std::string name = name_it->second;
 
     const auto default_value_it = get_param(joint.parameters, "default_param_value");
     if (!default_value_it.has_value()) {
