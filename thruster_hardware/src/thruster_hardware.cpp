@@ -161,7 +161,7 @@ auto ThrusterHardware::on_activate(const rclcpp_lifecycle::State & /*previous_st
 
     // Wait until the result is available
     auto future = set_params_client_->async_send_request(request);
-    const std::future_result = future.wait_for(set_param_timeout_);
+    const std::future_result result = future.wait_for(set_param_timeout_);
 
     if (result == std::future_status::ready) {
       const auto responses = future.get()->results;
@@ -220,7 +220,7 @@ auto ThrusterHardware::on_deactivate(const rclcpp_lifecycle::State & /*previous_
     RCLCPP_WARN(logger_, "Attempting to leave RC passthrough mode...");  // NOLINT
 
     auto future = set_params_client_->async_send_request(request);
-    const std::future_result = future.wait_for(set_param_timeout_);
+    const std::future_result result = future.wait_for(set_param_timeout_);
 
     if (result == std::future_status::ready) {
       const auto responses = future.get()->results;
