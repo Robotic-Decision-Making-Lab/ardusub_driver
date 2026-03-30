@@ -1,5 +1,5 @@
 ARG ROS_DISTRO=rolling
-FROM ros:$ROS_DISTRO-ros-base as desktop
+FROM ros:$ROS_DISTRO-ros-base AS desktop
 
 ENV DEBIAN_FRONTEND=noninteractive
 WORKDIR /root/ws_ros
@@ -88,7 +88,7 @@ RUN sudo apt-get -q update \
 # This prevents us from needing to pin the setuputils version (which doesn't always work)
 ENV PYTHONWARNINGS="ignore"
 
-FROM desktop as desktop-nvidia
+FROM desktop AS desktop-nvidia
 
 # Install NVIDIA software
 RUN sudo apt-get update \
@@ -105,6 +105,6 @@ RUN sudo apt-get update \
     && sudo rm -rf /var/lib/apt/lists/*
 
 # Env vars for the nvidia-container-runtime.
-ENV NVIDIA_VISIBLE_DEVICES all
-ENV NVIDIA_DRIVER_CAPABILITIES graphics,utility,compute
-ENV QT_X11_NO_MITSHM 1
+ENV NVIDIA_VISIBLE_DEVICES=all
+ENV NVIDIA_DRIVER_CAPABILITIES=graphics,utility,compute
+ENV QT_X11_NO_MITSHM=1

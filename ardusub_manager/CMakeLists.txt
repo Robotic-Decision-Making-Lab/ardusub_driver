@@ -7,21 +7,14 @@ endif()
 
 include(GNUInstallDirs)
 
-set(THIS_PACKAGE_INCLUDE_DEPENDS
-    rclcpp
-    rclcpp_lifecycle
-    tf2
-    tf2_ros
-    mavros_msgs
-    geometry_msgs
-    geographic_msgs
-)
-
-foreach(Dependency IN ITEMS ${THIS_PACKAGE_INCLUDE_DEPENDS})
-    find_package(${Dependency} REQUIRED)
-endforeach()
-
 find_package(ament_cmake REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(rclcpp_lifecycle REQUIRED)
+find_package(tf2 REQUIRED)
+find_package(tf2_ros REQUIRED)
+find_package(mavros_msgs REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(geographic_msgs REQUIRED)
 find_package(generate_parameter_library REQUIRED)
 
 generate_parameter_library(ardusub_manager_parameters
@@ -30,9 +23,18 @@ generate_parameter_library(ardusub_manager_parameters
 
 add_executable(ardusub_manager)
 target_sources(ardusub_manager PRIVATE src/ardusub_manager.cpp)
-
-ament_target_dependencies(ardusub_manager PUBLIC ${THIS_PACKAGE_INCLUDE_DEPENDS})
-target_link_libraries(ardusub_manager PUBLIC ardusub_manager_parameters)
+target_link_libraries(
+    ardusub_manager
+    PUBLIC
+        ${mavros_msgs_TARGETS}
+        ${geometry_msgs_TARGETS}
+        ${geographic_msgs_TARGETS}
+        ardusub_manager_parameters
+        rclcpp::rclcpp
+        rclcpp_lifecycle::rclcpp_lifecycle
+        tf2::tf2
+        tf2_ros::tf2_ros
+)
 target_compile_features(ardusub_manager PUBLIC cxx_std_23)
 
 install(
