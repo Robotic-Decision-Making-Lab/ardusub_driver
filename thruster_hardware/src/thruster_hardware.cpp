@@ -76,7 +76,7 @@ auto ThrusterHardware::on_init(const hardware_interface::HardwareComponentInterf
 
     // store the thruster configurations
     ThrusterConfig config;
-    config.param.name = std::to_string(name);
+    config.param.name = name;
     config.param.value.type = rcl_interfaces::msg::ParameterType::PARAMETER_INTEGER;
     config.param.value.integer_value = default_value;
     config.channel = channel;
