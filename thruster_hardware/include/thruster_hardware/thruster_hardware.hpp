@@ -83,6 +83,8 @@ private:
   bool is_active_{false};
 
   int max_retries_;
+  std::chrono::duration<double> set_param_timeout_;
+
   rclcpp::Logger logger_{rclcpp::get_logger("ardusub_thruster_hardware")};
 };
 
