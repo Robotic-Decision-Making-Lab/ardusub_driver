@@ -73,6 +73,14 @@ auto ThrusterHardware::on_init(const hardware_interface::HardwareComponentInterf
     }
     const int default_value = default_value_it.value();
 
+    const auto desired_value_it = joint.parameters.find("desired_param_value");
+    if (desired_value_it == joint.parameters.cend()) {
+      // NOLINTNEXTLINE
+      RCLCPP_ERROR(logger_, "Joint %s is missing the required parameter 'desired_param_value'", joint.name.c_str());
+      return hardware_interface::CallbackReturn::ERROR;
+    }
+    const auto desired_value = std::stoi(desired_value_it->second);
+
     // store the thruster configurations
     ThrusterConfig config;
     config.param.name = std::to_string(name);
