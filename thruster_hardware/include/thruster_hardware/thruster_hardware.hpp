@@ -65,6 +65,7 @@ private:
     rcl_interfaces::msg::Parameter param;
     int channel;
     int neutral_pwm = 1500;
+    int desired_value;
   };
 
   auto stop_thrusters() -> void;
