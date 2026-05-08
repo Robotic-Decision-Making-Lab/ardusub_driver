@@ -72,7 +72,7 @@ auto ArduSubManager::set_message_rate(int64_t msg_id, double rate) const -> void
 
   using namespace std::chrono_literals;
 
-  auto future_result = set_message_intervals_client_->async_send_request(std::move(request)).future.share();
+  auto future_result = set_message_intervals_client_->async_send_request(request).future.share();
   auto future_status = wait_for_result(future_result, 5s);
 
   if (future_status != std::future_status::ready) {
