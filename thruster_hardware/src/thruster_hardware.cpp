@@ -49,6 +49,10 @@ auto ThrusterHardware::on_init(const hardware_interface::HardwareComponentInterf
   // not required - default to 3 if not provided
   max_retries_ = get_param(info_.hardware_parameters, "max_set_param_attempts").value_or(3);
 
+  // not required - default to 5 seconds if not provided
+  const auto timeout_sec = get_param(info_.hardware_parameters, "set_param_timeout_sec").value_or(5);
+  set_param_timeout_ = std::chrono::duration<double>(timeout_sec);
+
   // retrieve and validate the joint parameters
   for (const auto & joint : info_.joints) {
     const auto channel_it = get_param(joint.parameters, "channel");
@@ -58,12 +62,13 @@ auto ThrusterHardware::on_init(const hardware_interface::HardwareComponentInterf
     }
     const int channel = channel_it.value();
 
-    const auto name_it = get_param(joint.parameters, "param_name");
-    if (!name_it.has_value()) {
+    // the `param_name` parameter is a string so we can't use our `get_param` helper here
+    auto name_it = joint.parameters.find("param_name");
+    if (name_it == joint.parameters.cend()) {
       RCLCPP_ERROR(logger_, "Joint %s is missing the required parameter 'param_name'", joint.name.c_str());  // NOLINT
       return hardware_interface::CallbackReturn::ERROR;
     }
-    const int name = name_it.value();
+    const std::string name = name_it->second;
 
     const auto default_value_it = get_param(joint.parameters, "default_param_value");
     if (!default_value_it.has_value()) {
@@ -73,12 +78,21 @@ auto ThrusterHardware::on_init(const hardware_interface::HardwareComponentInterf
     }
     const int default_value = default_value_it.value();
 
+    const auto desired_value_it = joint.parameters.find("desired_param_value");
+    if (desired_value_it == joint.parameters.cend()) {
+      // NOLINTNEXTLINE
+      RCLCPP_ERROR(logger_, "Joint %s is missing the required parameter 'desired_param_value'", joint.name.c_str());
+      return hardware_interface::CallbackReturn::ERROR;
+    }
+    const auto desired_value = std::stoi(desired_value_it->second);
+
     // store the thruster configurations
     ThrusterConfig config;
-    config.param.name = std::to_string(name);
+    config.param.name = name;
     config.param.value.type = rcl_interfaces::msg::ParameterType::PARAMETER_INTEGER;
     config.param.value.integer_value = default_value;
     config.channel = channel;
+    config.desired_value = desired_value;
 
     if (joint.parameters.find("neutral_pwm") != joint.parameters.cend()) {
       config.neutral_pwm = std::stoi(joint.parameters.at("neutral_pwm"));
@@ -144,7 +158,7 @@ auto ThrusterHardware::on_activate(const rclcpp_lifecycle::State & /*previous_st
     rcl_interfaces::msg::Parameter param;
     param.name = config.param.name;
     param.value.type = rcl_interfaces::msg::ParameterType::PARAMETER_INTEGER;
-    param.value.integer_value = 1;  // Set the thruster parameter values to RC passthrough here
+    param.value.integer_value = config.desired_value;  // Set the thruster parameter values to the desired values here
     params.emplace_back(param);
   }
 
@@ -152,20 +166,22 @@ auto ThrusterHardware::on_activate(const rclcpp_lifecycle::State & /*previous_st
   request->parameters = params;
 
   for (int i = 0; i < max_retries_; ++i) {
-    RCLCPP_WARN(logger_, "Attempting to set thruster parameters to RC passthrough...");  // NOLINT
+    RCLCPP_WARN(logger_, "Attempting to set thruster parameters to RCIN mode...");  // NOLINT
 
     // Wait until the result is available
     auto future = set_params_client_->async_send_request(request);
-    if (rclcpp::spin_until_future_complete(get_node(), future) == rclcpp::FutureReturnCode::SUCCESS) {
+    const std::future_status result = future.wait_for(set_param_timeout_);
+
+    if (result == std::future_status::ready) {
       const auto responses = future.get()->results;
       for (const auto & response : responses) {
         if (!response.successful) {
-          RCLCPP_ERROR(logger_, "Failed to set thruster parameter %s.", response.reason.c_str());  // NOLINT
-          return hardware_interface::CallbackReturn::ERROR;
+          RCLCPP_ERROR(logger_, "Failed to set thruster parameter %s. Retrying...", response.reason.c_str());  // NOLINT
+          continue;
         }
       }
 
-      RCLCPP_INFO(logger_, "Successfully set thruster parameters to RC passthrough!");  // NOLINT
+      RCLCPP_INFO(logger_, "Successfully set thruster parameters to RCIN mode!");  // NOLINT
 
       // Stop the thrusters before switching to an external controller
       stop_thrusters();
@@ -175,11 +191,12 @@ auto ThrusterHardware::on_activate(const rclcpp_lifecycle::State & /*previous_st
 
       return hardware_interface::CallbackReturn::SUCCESS;
     }
+    RCLCPP_ERROR(logger_, "Timed out while waiting for parameter set response. Retrying...");  // NOLINT
   }
 
   RCLCPP_ERROR(  // NOLINT
     logger_,
-    "Failed to set thruster parameters to passthrough mode after %d attempts. Make sure that the MAVROS parameter "
+    "Failed to set thruster parameters to RCIN mode after %d attempts. Make sure that the MAVROS parameter "
     "plugin is fully running and configured.",
     max_retries_);
 
@@ -195,7 +212,7 @@ auto ThrusterHardware::on_deactivate(const rclcpp_lifecycle::State & /*previous_
   // stop sending rc override messages from the write loop
   is_active_ = false;
 
-  // stop the thrusters before switching out of passthrough mode
+  // stop the thrusters before switching out of RCIN mode
   stop_thrusters();
 
   std::vector<rcl_interfaces::msg::Parameter> params;
@@ -209,29 +226,29 @@ auto ThrusterHardware::on_deactivate(const rclcpp_lifecycle::State & /*previous_
   request->parameters = params;
 
   for (int i = 0; i < max_retries_; ++i) {
-    RCLCPP_WARN(logger_, "Attempting to leave RC passthrough mode...");  // NOLINT
+    RCLCPP_WARN(logger_, "Attempting to leave RCIN mode...");  // NOLINT
 
     auto future = set_params_client_->async_send_request(request);
+    const std::future_status result = future.wait_for(set_param_timeout_);
 
-    // Wait until the result is available
-    if (rclcpp::spin_until_future_complete(get_node(), future) == rclcpp::FutureReturnCode::SUCCESS) {
+    if (result == std::future_status::ready) {
       const auto responses = future.get()->results;
       for (const auto & response : responses) {
         if (!response.successful) {
-          RCLCPP_ERROR(logger_, "Failed to set thruster parameter %s.", response.reason.c_str());  // NOLINT
-          return hardware_interface::CallbackReturn::ERROR;
+          RCLCPP_ERROR(logger_, "Failed to set thruster parameter %s. Retrying...", response.reason.c_str());  // NOLINT
+          continue;
         }
       }
 
       RCLCPP_INFO(logger_, "Successfully restored the default thruster values!");  // NOLINT
-
       return hardware_interface::CallbackReturn::SUCCESS;
     }
+    RCLCPP_ERROR(logger_, "Timed out while waiting for parameter set response. Retrying...");  // NOLINT
   }
 
   RCLCPP_ERROR(  // NOLINT
     logger_,
-    "Failed to fully leave passthrough mode after %d attempts. Make sure that the MAVROS parameter plugin is fully "
+    "Failed to fully leave RCIN mode after %d attempts. Make sure that the MAVROS parameter plugin is fully "
     "running and configured.",
     max_retries_);
 

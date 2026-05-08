@@ -65,6 +65,7 @@ private:
     rcl_interfaces::msg::Parameter param;
     int channel;
     int neutral_pwm = 1500;
+    int desired_value;
   };
 
   auto stop_thrusters() -> void;
@@ -83,6 +84,8 @@ private:
   bool is_active_{false};
 
   int max_retries_;
+  std::chrono::duration<double> set_param_timeout_;
+
   rclcpp::Logger logger_{rclcpp::get_logger("ardusub_thruster_hardware")};
 };
 
